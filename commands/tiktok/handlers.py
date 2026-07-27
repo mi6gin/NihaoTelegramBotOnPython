@@ -190,7 +190,10 @@ async def process_audio_link_input(message: Message, state: FSMContext, db_user:
         except Exception:
             pass
 
-    await message.bot.send_chat_action(chat_id=message.chat.id, action="upload_voice")
+    try:
+        await message.bot.send_chat_action(chat_id=message.chat.id, action="upload_voice")
+    except Exception:
+        pass
     audio_file = await TikTokParser.download_audio(tiktok_url)
 
     if not audio_file or not os.path.exists(audio_file):
@@ -255,7 +258,10 @@ async def process_photo_link_input(message: Message, state: FSMContext, i18n: I1
         except Exception:
             pass
 
-    await message.bot.send_chat_action(chat_id=message.chat.id, action="upload_photo")
+    try:
+        await message.bot.send_chat_action(chat_id=message.chat.id, action="upload_photo")
+    except Exception:
+        pass
     info = await TikTokParser.get_post_info(tiktok_url)
 
     images = info.get("images", [])
@@ -431,7 +437,10 @@ async def auto_download_tiktok_link(message: Message, db_user: User):
         return
 
     logger.info(f"User {db_user.telegram_id} sent TikTok link: {tiktok_url}")
-    await message.bot.send_chat_action(chat_id=message.chat.id, action="upload_video")
+    try:
+        await message.bot.send_chat_action(chat_id=message.chat.id, action="upload_video")
+    except Exception:
+        pass
 
     info = await TikTokParser.get_post_info(tiktok_url)
     caption = format_user_caption(db_user, tiktok_url)

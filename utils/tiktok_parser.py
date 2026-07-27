@@ -21,8 +21,8 @@ class TikTokParser:
     """
     Асинхронный гибридный загрузчик контента из TikTok.
     Поддерживает:
-    - Видео без водяных знаков (MP4) через yt-dlp.
-    - Фото-слайдшоу (карусели из HD-картинок) через прямой асинхронный парсинг официального HTML/JSON.
+    - Видео без водяных знаков (MP4) через yt-dlp с автоматическим фолбеком.
+    - Фото-слайдшоу (карусели из HD-картинок) через прямой HTML/JSON и API фолбек.
     - Извлечение фонового аудиотрека (MP3).
     """
 
@@ -55,14 +55,50 @@ class TikTokParser:
             return url
 
     @staticmethod
+    async def fetch_tikwm_info(url: str) -> Optional[Dict[str, Any]]:
+        """
+        Запрашивает данные о посте через свободный API Tikwm (надёжный фолбек).
+        """
+        api_url = f"https://www.tikwm.com/api/?url={url}"
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+        }
+        try:
+            async with aiohttp.ClientSession(headers=headers) as session:
+                async with session.get(api_url, timeout=aiohttp.ClientTimeout(total=10)) as resp:
+                    if resp.status == 200:
+                        res = await resp.json()
+                        if res.get("code") == 0 and "data" in res:
+                            data = res["data"]
+                            images = data.get("images", [])
+                            play_url = data.get("play") or data.get("wmplay")
+                            if play_url and not play_url.startswith("http"):
+                                play_url = "https://www.tikwm.com" + play_url
+                            
+                            music_url = data.get("music")
+                            if music_url and not music_url.startswith("http"):
+                                music_url = "https://www.tikwm.com" + music_url
+
+                            return {
+                                "type": "photo" if images else "video",
+                                "images": images,
+                                "play_url": play_url,
+                                "music_url": music_url,
+                                "title": data.get("title", ""),
+                                "author": data.get("author", {}).get("nickname", ""),
+                            }
+        except Exception as e:
+            logger.warning(f"Tikwm API error for {url}: {e}")
+        return None
+
+    @staticmethod
     async def get_post_info(url: str) -> Dict[str, Any]:
         """
         Анализирует пост TikTok (видео или фото-слайдшоу).
-        Возвращает тип поста ('video' или 'photo') и метаданные.
         """
         resolved_url = await TikTokParser.resolve_url(url)
         
-        # Запрашиваем официальную страницу для анализа типа поста и слайдшоу
+        # 1. Запрашиваем официальную страницу
         headers = {
             "User-Agent": (
                 "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
@@ -100,14 +136,23 @@ class TikTokParser:
                             "title": item_info.get("desc", "TikTok Slideshow"),
                             "images": image_urls,
                             "music_url": music,
-                            "author": item_info.get("author", {}).get("nickname", "TikTok User"),
-                            "author_username": item_info.get("author", {}).get("uniqueId", ""),
                         }
 
         except Exception as e:
             logger.debug(f"Direct JSON parse error: {e}")
 
-        # По умолчанию обрабатываем как видео
+        # 2. Фолбек на Tikwm API если встроенный JSON не вернул картинки
+        tikwm_info = await TikTokParser.fetch_tikwm_info(resolved_url)
+        if tikwm_info:
+            return {
+                "type": tikwm_info["type"],
+                "resolved_url": resolved_url,
+                "title": tikwm_info.get("title", ""),
+                "images": tikwm_info.get("images", []),
+                "play_url": tikwm_info.get("play_url"),
+                "music_url": tikwm_info.get("music_url"),
+            }
+
         return {
             "type": "video",
             "resolved_url": resolved_url,
@@ -119,7 +164,7 @@ class TikTokParser:
     @staticmethod
     def _download_video_sync(url: str, output_path: str) -> Optional[str]:
         """
-        Синхронная функция скачивания MP4 видео без водяных знаков через yt-dlp.
+        Синхронная функция скачивания MP4 видео через yt-dlp.
         """
         ydl_opts = {
             "format": "bestvideo+bestaudio/best",
@@ -132,7 +177,6 @@ class TikTokParser:
                 ydl.download([url])
             if os.path.exists(output_path):
                 return output_path
-            # Если yt-dlp изменил расширение файла
             base_dir = os.path.dirname(output_path)
             for fname in os.listdir(base_dir):
                 if fname.startswith(os.path.basename(output_path).split('.')[0]):
@@ -145,22 +189,42 @@ class TikTokParser:
     async def download_video(url: str, filename_prefix: str = "tiktok_video") -> Optional[str]:
         """
         Асинхронно скачивает видео MP4 без водяного знака.
+        Сначала раскрывает редирект, проверяет прямые ссылки, и использует yt-dlp.
         """
+        resolved_url = await TikTokParser.resolve_url(url)
         output_file = os.path.join(TEMP_DIR, f"{filename_prefix}_{int(asyncio.get_event_loop().time() * 1000)}.mp4")
-        return await asyncio.to_thread(TikTokParser._download_video_sync, url, output_file)
+
+        info = await TikTokParser.get_post_info(resolved_url)
+        
+        # Если есть прямая ссылка на видео без водяного знака (от Tikwm)
+        if info.get("play_url"):
+            try:
+                async with aiohttp.ClientSession() as session:
+                    async with session.get(info["play_url"], timeout=aiohttp.ClientTimeout(total=30)) as resp:
+                        if resp.status == 200:
+                            content = await resp.read()
+                            with open(output_file, "wb") as f:
+                                f.write(content)
+                            return output_file
+            except Exception as e:
+                logger.warning(f"Error downloading direct play_url: {e}")
+
+        # Фолбек на yt-dlp с раскрытым каноническим URL
+        return await asyncio.to_thread(TikTokParser._download_video_sync, resolved_url, output_file)
 
     @staticmethod
     async def download_audio(url: str, filename_prefix: str = "tiktok_audio") -> Optional[str]:
         """
         Асинхронно извлекает или скачивает аудиофайл MP3.
         """
+        resolved_url = await TikTokParser.resolve_url(url)
         output_file = os.path.join(TEMP_DIR, f"{filename_prefix}_{int(asyncio.get_event_loop().time() * 1000)}.mp3")
         
-        info = await TikTokParser.get_post_info(url)
+        info = await TikTokParser.get_post_info(resolved_url)
         if info.get("music_url"):
             try:
                 async with aiohttp.ClientSession() as session:
-                    async with session.get(info["music_url"]) as resp:
+                    async with session.get(info["music_url"], timeout=aiohttp.ClientTimeout(total=20)) as resp:
                         if resp.status == 200:
                             content = await resp.read()
                             with open(output_file, "wb") as f:
@@ -169,7 +233,7 @@ class TikTokParser:
             except Exception as e:
                 logger.warning(f"Error downloading direct music_url: {e}")
 
-        # Фолбек на yt-dlp для извлечения аудио
+        # Фолбек на yt-dlp с раскрытым каноническим URL
         def _download_audio_sync(u: str, out: str) -> Optional[str]:
             ydl_opts = {
                 "format": "bestaudio/best",
@@ -191,4 +255,4 @@ class TikTokParser:
                 logger.error(f"yt-dlp audio extract error: {e}")
             return None
 
-        return await asyncio.to_thread(_download_audio_sync, url, output_file)
+        return await asyncio.to_thread(_download_audio_sync, resolved_url, output_file)

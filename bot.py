@@ -44,6 +44,37 @@ async def set_bot_commands(bot: Bot):
         logger.error(f"Ошибка при установке меню команд: {e}")
 
 
+async def schedule_midnight_restart():
+    """
+    Фоновая задача, которая вычисляет время до следующей полуночи (00:00)
+    и мягко завершает процесс бота.
+    Благодаря Docker restart policy (restart: unless-stopped),
+    бот автоматически поднимется заново.
+    """
+    import datetime
+    import sys
+    
+    now = datetime.datetime.now()
+    tomorrow = now + datetime.timedelta(days=1)
+    midnight = datetime.datetime(
+        year=tomorrow.year,
+        month=tomorrow.month,
+        day=tomorrow.day,
+        hour=0,
+        minute=0,
+        second=0
+    )
+    seconds_to_wait = (midnight - now).total_seconds()
+    
+    logger.info(f"Запланирован автоперезапуск бота в 00:00. До перезапуска осталось {seconds_to_wait:.1f} сек.")
+    
+    await asyncio.sleep(seconds_to_wait)
+    
+    logger.info("Время 00:00. Инициируем мягкий перезапуск бота...")
+    await asyncio.sleep(1)
+    sys.exit(0)
+
+
 async def main():
     """
     Основная функция запуска бота Нихао-тян.
@@ -85,6 +116,9 @@ async def main():
 
     # 6. Пропуск накопившихся обновлений перед стартом (drop_pending_updates)
     await bot.delete_webhook(drop_pending_updates=True)
+
+    # Запускаем фоновый планировщик перезапуска в полночь
+    asyncio.create_task(schedule_midnight_restart())
 
     # 7. Запуск polling-а
     try:

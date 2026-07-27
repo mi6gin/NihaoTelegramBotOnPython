@@ -171,6 +171,7 @@ nihao-chan-bot/
     ├── test_fsm_storage.py     # Тесты сохранения FSM-состояний в БД.
     ├── test_localization.py    # Проверка симметрии и рендера локализации.
     ├── test_mailing_targeted.py # Тесты таргетированной и выборочной рассылки.
+    ├── test_restart.py         # Тесты автоперезапуска бота в полночь.
     ├── test_middlewares.py     # Тесты троттлинга, банов и логирования.
     ├── test_repositories.py    # Интеграционные тесты СУБД.
     ├── test_tickets_admin.py   # Тесты панели обращений и выбора темы в каталоге.

@@ -25,10 +25,13 @@ async def test_cmd_dedinside_when_clear():
     state.set_state = AsyncMock()
     state.update_data = AsyncMock()
 
+    session = AsyncMock()
     i18n = MagicMock(spec=I18nContext)
+    i18n.locale = "ru"
     i18n.get = MagicMock(return_value="Title")
 
-    await cmd_dedinside(message, state, i18n)
+    with patch("routers.user.dedinside.BotTextRepository.get_text", new=AsyncMock(return_value=None)):
+        await cmd_dedinside(message, state, session, i18n)
 
     message.answer.assert_called_once()
     state.set_state.assert_called_once_with(DedinsideStates.selecting_count)
@@ -44,10 +47,11 @@ async def test_cmd_dedinside_when_already_active():
     state = AsyncMock(spec=FSMContext)
     state.get_state = AsyncMock(return_value=DedinsideStates.selecting_count)
 
+    session = AsyncMock()
     i18n = MagicMock(spec=I18nContext)
     i18n.get = MagicMock(return_value="Already Active Warning")
 
-    await cmd_dedinside(message, state, i18n)
+    await cmd_dedinside(message, state, session, i18n)
 
     message.answer.assert_called_once_with("Already Active Warning")
 

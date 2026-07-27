@@ -61,6 +61,7 @@ async def init_db():
             from database.models.user import User
             from database.models.ticket import Ticket
             from database.models.fsm_state import FSMStateModel
+            from database.models.bot_text import BotText
             
             await conn.run_sync(Base.metadata.create_all)
         logger.info("База данных успешно инициализирована.")

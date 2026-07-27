@@ -9,6 +9,7 @@ btn-back-to-catalog = 🔙 Back to Catalog
 btn-admin-stats = 📊 Statistics
 btn-admin-mailing = 📣 Create Broadcast
 btn-admin-users = 👥 User Management
+btn-admin-texts = 📝 Bot Texts
 btn-admin-panel = 🔙 Control Panel
 btn-admin-logs = 📋 Get Logs
 btn-admin-tickets = 📬 Tickets ({ $count })

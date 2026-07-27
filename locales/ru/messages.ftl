@@ -9,6 +9,7 @@ btn-back-to-catalog = 🔙 Назад в каталог
 btn-admin-stats = 📊 Статистика
 btn-admin-mailing = 📢 Рассылка
 btn-admin-users = 👤 Бан/Разбан
+btn-admin-texts = 📝 Тексты бота
 btn-admin-logs = 📄 Получить логи
 btn-admin-tickets = 📬 Обращения ({ $count })
 btn-admin-panel = 🔙 Панель управления

@@ -13,11 +13,14 @@ from keyboards.inline.dedinside import (
 from filters.is_private import IsPrivate
 from utils.logger import logger
 
+from sqlalchemy.ext.asyncio import AsyncSession
+from database.repository.bot_text_repo import BotTextRepository
+
 router = Router(name="user_dedinside")
 
 
 @router.message(Command("dedinside"), IsPrivate(), StateFilter("*"))
-async def cmd_dedinside(message: Message, state: FSMContext, i18n: I18nContext):
+async def cmd_dedinside(message: Message, state: FSMContext, session: AsyncSession, i18n: I18nContext):
     """
     Запуск команды /dedinside.
     Если у пользователя уже есть активное состояние (меню, ожидание текста или спам),
@@ -28,8 +31,12 @@ async def cmd_dedinside(message: Message, state: FSMContext, i18n: I18nContext):
         await message.answer(i18n.get("dedinside-already-active"))
         return
 
+    # Динамический текст из СУБД (с фолбеком на .ftl переводы)
+    custom_title = await BotTextRepository.get_text(session, "dedinside_title", i18n.locale)
+    title_text = custom_title if custom_title else i18n.get("dedinside-title")
+
     menu_msg = await message.answer(
-        i18n.get("dedinside-title"),
+        title_text,
         reply_markup=get_dedinside_menu_keyboard(i18n)
     )
 

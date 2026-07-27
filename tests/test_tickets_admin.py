@@ -10,7 +10,10 @@ from routers.admin.tickets import (
     view_open_tickets, 
     close_ticket_no_reply, 
     start_ticket_reply, 
-    process_ticket_reply
+    process_ticket_reply,
+    start_alert_ticket_reply,
+    cancel_alert_reply,
+    close_alert_ticket_no_reply
 )
 from routers.user.catalog import select_catalog_item
 from database.models.ticket import Ticket
@@ -185,3 +188,133 @@ async def test_select_catalog_theme():
         
         mock_set_theme.assert_called_once_with(session, 9876, "theme_sakura")
         callback.answer.assert_called_once_with("Sakura Style applied", show_alert=True)
+
+
+@pytest.mark.asyncio
+async def test_start_alert_ticket_reply():
+    """Тест вызова быстрого ответа из алерта."""
+    callback = MagicMock(spec=CallbackQuery)
+    callback.data = "admin_alert_reply_55"
+    callback.answer = AsyncMock()
+    callback.message = MagicMock()
+    callback.message.message_id = 999
+    callback.message.answer = AsyncMock()
+    
+    i18n = MagicMock(spec=I18nContext)
+    i18n.get = MagicMock(return_value="Prompt")
+    state = AsyncMock(spec=FSMContext)
+    
+    await start_alert_ticket_reply(callback, i18n, state)
+    
+    callback.answer.assert_called_once()
+    state.set_state.assert_called_once()
+    state.update_data.assert_called_once_with(
+        ticket_id=55,
+        prompt_msg_id=ANY,
+        is_alert=True,
+        alert_msg_id=999
+    )
+
+
+@pytest.mark.asyncio
+async def test_cancel_alert_reply():
+    """Тест отмены быстрого ответа из алерта."""
+    callback = MagicMock(spec=CallbackQuery)
+    callback.data = "cancel_alert_reply_55"
+    callback.answer = AsyncMock()
+    callback.message = MagicMock()
+    callback.message.delete = AsyncMock()
+    
+    i18n = MagicMock(spec=I18nContext)
+    i18n.get = MagicMock(return_value="Cancelled")
+    state = AsyncMock(spec=FSMContext)
+    
+    await cancel_alert_reply(callback, i18n, state)
+    
+    state.clear.assert_called_once()
+    callback.answer.assert_called_once_with("Cancelled")
+    callback.message.delete.assert_called_once()
+
+
+@pytest.mark.asyncio
+async def test_close_alert_ticket_no_reply():
+    """Тест быстрого закрытия тикета без ответа из алерта."""
+    callback = MagicMock(spec=CallbackQuery)
+    callback.data = "admin_alert_close_55"
+    callback.answer = AsyncMock()
+    callback.message = MagicMock()
+    callback.message.text = "Alert Message Body"
+    callback.message.edit_text = AsyncMock()
+    
+    session = MagicMock(spec=AsyncSession)
+    bot = AsyncMock(spec=Bot)
+    i18n = MagicMock(spec=I18nContext)
+    i18n.get = MagicMock(return_value="Notification info")
+    state = AsyncMock(spec=FSMContext)
+    
+    mock_ticket = MagicMock(spec=Ticket)
+    mock_ticket.id = 55
+    mock_ticket.user_id = 777
+    mock_ticket.user = MagicMock()
+    mock_ticket.user.language = "ru"
+    
+    with patch("database.repository.ticket_repo.TicketRepository.get_by_id", return_value=mock_ticket), \
+         patch("database.repository.ticket_repo.TicketRepository.close", return_value=True) as mock_close:
+         
+        await close_alert_ticket_no_reply(callback, session, bot, i18n, state)
+        
+        state.clear.assert_called_once()
+        mock_close.assert_called_once_with(session, 55)
+        callback.answer.assert_called_once_with("Notification info", show_alert=True)
+        bot.send_message.assert_called_once_with(chat_id=777, text="Notification info")
+        callback.message.edit_text.assert_called_once()
+
+
+@pytest.mark.asyncio
+async def test_process_ticket_reply_alert_success():
+    """Тест успешного процессинга ответа, когда он был инициирован из алерта."""
+    message = MagicMock(spec=Message)
+    message.text = "Here is my support response"
+    message.answer = AsyncMock()
+    message.chat = MagicMock()
+    message.chat.id = 1212
+    
+    session = MagicMock(spec=AsyncSession)
+    bot = AsyncMock(spec=Bot)
+    bot.delete_message = AsyncMock()
+    bot.edit_message_text = AsyncMock()
+    
+    state = AsyncMock(spec=FSMContext)
+    state.get_data = AsyncMock(return_value={
+        "ticket_id": 55,
+        "index": None,
+        "prompt_msg_id": 888,
+        "is_alert": True,
+        "alert_msg_id": 999
+    })
+    
+    i18n = MagicMock(spec=I18nContext)
+    i18n.get = MagicMock(return_value="Reply successful template")
+    
+    mock_ticket = MagicMock(spec=Ticket)
+    mock_ticket.id = 55
+    mock_ticket.user_id = 777
+    mock_ticket.user = MagicMock()
+    mock_ticket.user.language = "ru"
+    
+    with patch("database.repository.ticket_repo.TicketRepository.get_by_id", return_value=mock_ticket), \
+         patch("database.repository.ticket_repo.TicketRepository.close", return_value=True) as mock_close:
+         
+        await process_ticket_reply(message, session, bot, state, i18n)
+        
+        state.clear.assert_called_once()
+        bot.delete_message.assert_called_once_with(chat_id=1212, message_id=888)
+        mock_close.assert_called_once_with(session, 55)
+        bot.send_message.assert_called_once_with(chat_id=777, text="Reply successful template")
+        message.answer.assert_called_once_with("Reply successful template")
+        bot.edit_message_text.assert_called_once_with(
+            chat_id=1212,
+            message_id=999,
+            text="Reply successful template",
+            reply_markup=None
+        )

@@ -27,6 +27,16 @@ btn-ticket-prev = ⬅️ Пред.
 btn-ticket-next = След. ➡️
 admin-ticket-reply-prompt = Введите ваш ответ на обращение #{ $id } (он будет отправлен пользователю, а обращение закроется):
 admin-ticket-reply-cancel = Отправка ответа отменена.
+admin-ticket-reply-success = ✅ Ответ успешно отправлен, обращение #{ $id } закрыто.
+admin-ticket-notification-alert =
+    🔔 <b>Новое обращение #{ $id }!</b>
+    
+    👤 <b>Отправитель:</b> { $name } (@{ $username })
+    💬 <b>Сообщение:</b>
+    <code>{ $message }</code>
+admin-ticket-alert-responded =
+    ✅ <b>Обращение #{ $id } закрыто с ответом:</b>
+    <code>{ $reply }</code>
 user-ticket-closed-simple = 🔔 Ваше обращение #{ $id } было закрыто поддержкой.
 user-ticket-closed-with-reply =
     🔔 <b>Ваше обращение #{ $id } закрыто администратором.</b>
@@ -83,6 +93,7 @@ profile-title =
     ┣ <b>Активный стиль:</b> { $theme }
     ┗ <b>Дата регистрации:</b> { $date }
 profile-username-empty = не установлен
+btn-profile-change-theme = 🎨 Сменить стиль
 
 # Поддержка (Тикеты)
 support-prompt =

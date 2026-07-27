@@ -81,6 +81,42 @@ async def process_ticket_message(
     await state.clear()
     logger.info(f"User {db_user.telegram_id} created support ticket #{ticket.id}")
     
+    # Отправляем мгновенные алерты всем администраторам
+    from database.repository.user_repo import UserRepository
+    from aiogram.utils.keyboard import InlineKeyboardBuilder
+    
+    admins = await UserRepository.get_admins(session)
+    for admin in admins:
+        try:
+            admin_locale = admin.language or "ru"
+            builder = InlineKeyboardBuilder()
+            builder.button(
+                text=i18n.get("btn-ticket-reply", locale=admin_locale),
+                callback_data=f"admin_alert_reply_{ticket.id}"
+            )
+            builder.button(
+                text=i18n.get("btn-ticket-close-no-reply", locale=admin_locale),
+                callback_data=f"admin_alert_close_{ticket.id}"
+            )
+            builder.adjust(1)
+            
+            alert_text = i18n.get(
+                "admin-ticket-notification-alert",
+                locale=admin_locale,
+                id=str(ticket.id),
+                name=db_user.first_name,
+                username=db_user.username or i18n.get("profile-username-empty", locale=admin_locale),
+                message=ticket_text
+            )
+            
+            await message.bot.send_message(
+                chat_id=admin.telegram_id,
+                text=alert_text,
+                reply_markup=builder.as_markup()
+            )
+        except Exception as e:
+            logger.warning(f"Failed to send alert to admin {admin.telegram_id}: {e}")
+
     is_admin_user = await IsAdmin()(message, db_user)
     await message.answer(
         i18n.get("support-success", id=str(ticket.id)),

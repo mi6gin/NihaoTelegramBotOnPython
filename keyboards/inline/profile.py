@@ -5,11 +5,12 @@ from aiogram_i18n import I18nContext
 
 def get_profile_keyboard(i18n: I18nContext) -> InlineKeyboardMarkup:
     """
-    Возвращает клавиатуру для страницы профиля со сменой языка и возвратом в меню.
+    Возвращает клавиатуру для страницы профиля со сменой языка, перехода к стилям и возвратом в меню.
     """
     builder = InlineKeyboardBuilder()
     
     builder.button(text="🌐 Language / Язык", callback_data="change_language")
+    builder.button(text=i18n.get("btn-profile-change-theme"), callback_data="user_catalog")
     builder.button(text=i18n.get("btn-back-to-menu"), callback_data="back_to_menu")
     
     builder.adjust(1)

@@ -27,6 +27,16 @@ btn-ticket-prev = ⬅️ Prev
 btn-ticket-next = Next ➡️
 admin-ticket-reply-prompt = Enter your reply for ticket #{ $id } (it will be sent to the user and the ticket will be closed):
 admin-ticket-reply-cancel = Sending reply cancelled.
+admin-ticket-reply-success = ✅ Reply sent successfully, ticket #{ $id } is closed.
+admin-ticket-notification-alert =
+    🔔 <b>New ticket #{ $id }!</b>
+    
+    👤 <b>Sender:</b> { $name } (@{ $username })
+    💬 <b>Message:</b>
+    <code>{ $message }</code>
+admin-ticket-alert-responded =
+    ✅ <b>Ticket #{ $id } closed with reply:</b>
+    <code>{ $reply }</code>
 user-ticket-closed-simple = 🔔 Your ticket #{ $id } has been closed by support.
 user-ticket-closed-with-reply =
     🔔 <b>Your ticket #{ $id } has been closed by support.</b>
@@ -83,6 +93,7 @@ profile-title =
     ┣ <b>Active Style:</b> { $theme }
     ┗ <b>Registration Date:</b> { $date }
 profile-username-empty = not set
+btn-profile-change-theme = 🎨 Change Style
 
 # Support (Tickets)
 support-prompt =

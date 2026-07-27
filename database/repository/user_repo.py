@@ -114,6 +114,15 @@ class UserRepository:
         return list(result.scalars().all())
 
     @staticmethod
+    async def get_admins(session: AsyncSession) -> List[User]:
+        """
+        Возвращает список всех администраторов.
+        """
+        query = select(User).where(User.role == "admin")
+        result = await session.execute(query)
+        return list(result.scalars().all())
+
+    @staticmethod
     async def get_total_count(session: AsyncSession) -> int:
         """
         Возвращает общее количество пользователей.

@@ -32,6 +32,9 @@ class User(Base):
     # Активный стиль интерфейса
     selected_theme: Mapped[str] = mapped_column(String(64), server_default="theme_classic", default="theme_classic")
     
+    # Привязанный аккаунт TikTok без знака @
+    tiktok_username: Mapped[Optional[str]] = mapped_column(String(64), nullable=True)
+
     # Флаг блокировки пользователя
     is_banned: Mapped[bool] = mapped_column(Boolean, default=False)
     

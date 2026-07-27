@@ -93,6 +93,18 @@ class UserRepository:
         return None
 
     @staticmethod
+    async def set_tiktok_username(session: AsyncSession, telegram_id: int, username: Optional[str]) -> Optional[User]:
+        """
+        Устанавливает или сбрасывает привязанный аккаунт TikTok у пользователя.
+        """
+        user = await UserRepository.get_by_id(session, telegram_id)
+        if user:
+            user.tiktok_username = username
+            await session.commit()
+            return user
+        return None
+
+    @staticmethod
     async def set_ban_status(session: AsyncSession, telegram_id: int, is_banned: bool) -> bool:
         """
         Устанавливает статус бана пользователя (True - забанить, False - разбанить).

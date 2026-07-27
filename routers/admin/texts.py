@@ -12,6 +12,8 @@ from filters.is_private import IsPrivate
 from filters.is_admin import IsAdmin
 from utils.logger import logger
 
+from utils.text_manager import text_manager
+
 router = Router(name="admin_texts")
 
 
@@ -23,11 +25,11 @@ async def show_admin_texts_menu(callback: CallbackQuery, session: AsyncSession, 
     await state.clear()
     await callback.answer()
 
-    ru_text = await BotTextRepository.get_text(session, "dedinside_title", "ru") or i18n.get("dedinside-title", locale="ru")
-    en_text = await BotTextRepository.get_text(session, "dedinside_title", "en") or i18n.get("dedinside-title", locale="en")
+    ru_text = text_manager.get_text("dedinside-title", i18n=type("MockI18n", (), {"locale": "ru", "get": lambda self, k: i18n.get(k, locale="ru")})())
+    en_text = text_manager.get_text("dedinside-title", i18n=type("MockI18n", (), {"locale": "en", "get": lambda self, k: i18n.get(k, locale="en")})())
 
     menu_text = (
-        "📝 <b>Управление текстами бота в СУБД</b>\n\n"
+        "📝 <b>Управление текстами бота в СУБД (In-Memory RAM кэш)</b>\n\n"
         "Вы можете изменить приветственный текст команды /dedinside.\n\n"
         f"<b>Текущий текст RU:</b>\n<code>{ru_text}</code>\n\n"
         f"<b>Текущий текст EN:</b>\n<code>{en_text}</code>\n\n"
@@ -48,7 +50,7 @@ async def start_editing_text(callback: CallbackQuery, state: FSMContext, i18n: I
     await callback.answer()
     
     lang = "ru" if callback.data.endswith("_ru") else "en"
-    key = "dedinside_title"
+    key = "dedinside-title"
 
     await state.set_state(AdminTextStates.waiting_for_text_content)
     await state.update_data(edit_key=key, edit_lang=lang)
@@ -64,29 +66,28 @@ async def start_editing_text(callback: CallbackQuery, state: FSMContext, i18n: I
 @router.message(AdminTextStates.waiting_for_text_content, IsPrivate(), IsAdmin(), F.text)
 async def process_new_text_input(message: Message, state: FSMContext, session: AsyncSession, i18n: I18nContext):
     """
-    Сохраняет новый текст в базу данных и перенаправляет обратно в меню.
+    Сохраняет новый текст в СУБД, обновляет RAM кэш и возвращает в меню.
     """
     new_text = message.text.strip()
     data = await state.get_data()
-    key = data.get("edit_key", "dedinside_title")
+    key = data.get("edit_key", "dedinside-title")
     lang = data.get("edit_lang", "ru")
 
-    await BotTextRepository.set_text(session, key, lang, new_text)
+    await text_manager.set_text(session, key, lang, new_text)
     logger.info(f"Admin {message.from_user.id} updated text '{key}' ({lang}) to: '{new_text}'")
 
     await state.clear()
 
-    # Удаляем сообщение пользователя
     try:
         await message.delete()
     except Exception:
         pass
 
-    ru_text = await BotTextRepository.get_text(session, "dedinside_title", "ru") or i18n.get("dedinside-title", locale="ru")
-    en_text = await BotTextRepository.get_text(session, "dedinside_title", "en") or i18n.get("dedinside-title", locale="en")
+    ru_text = text_manager.get_text("dedinside-title", i18n=type("MockI18n", (), {"locale": "ru", "get": lambda self, k: i18n.get(k, locale="ru")})())
+    en_text = text_manager.get_text("dedinside-title", i18n=type("MockI18n", (), {"locale": "en", "get": lambda self, k: i18n.get(k, locale="en")})())
 
     menu_text = (
-        "✅ <b>Текст успешно сохранен в базе данных!</b>\n\n"
+        "✅ <b>Текст успешно сохранен в базе данных и кэше RAM!</b>\n\n"
         f"<b>Текущий текст RU:</b>\n<code>{ru_text}</code>\n\n"
         f"<b>Текущий текст EN:</b>\n<code>{en_text}</code>"
     )

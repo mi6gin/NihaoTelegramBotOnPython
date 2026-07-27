@@ -84,6 +84,11 @@ async def main():
     # 1. Инициализация базы данных (создание таблиц)
     await init_db()
 
+    # Загружаем динамические тексты из СУБД в кэш RAM
+    from utils.text_manager import text_manager
+    async with AsyncSessionLocal() as session:
+        await text_manager.load_cache(session)
+
     # 2. Инициализация бота и диспетчера.
     # Настраиваем HTML разметку сообщений по умолчанию для красивого форматирования.
     bot = Bot(

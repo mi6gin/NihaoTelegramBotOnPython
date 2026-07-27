@@ -14,13 +14,13 @@ from filters.is_private import IsPrivate
 from utils.logger import logger
 
 from sqlalchemy.ext.asyncio import AsyncSession
-from database.repository.bot_text_repo import BotTextRepository
+from utils.text_manager import text_manager
 
 router = Router(name="user_dedinside")
 
 
 @router.message(Command("dedinside"), IsPrivate(), StateFilter("*"))
-async def cmd_dedinside(message: Message, state: FSMContext, session: AsyncSession, i18n: I18nContext):
+async def cmd_dedinside(message: Message, state: FSMContext, i18n: I18nContext):
     """
     Запуск команды /dedinside.
     Если у пользователя уже есть активное состояние (меню, ожидание текста или спам),
@@ -28,12 +28,11 @@ async def cmd_dedinside(message: Message, state: FSMContext, session: AsyncSessi
     """
     current_state = await state.get_state()
     if current_state is not None:
-        await message.answer(i18n.get("dedinside-already-active"))
+        await message.answer(text_manager.get_text("dedinside-already-active", i18n))
         return
 
-    # Динамический текст из СУБД (с фолбеком на .ftl переводы)
-    custom_title = await BotTextRepository.get_text(session, "dedinside_title", i18n.locale)
-    title_text = custom_title if custom_title else i18n.get("dedinside-title")
+    # Динамический текст из RAM кэша (0ms) с подстраховкой на .ftl
+    title_text = text_manager.get_text("dedinside-title", i18n)
 
     menu_msg = await message.answer(
         title_text,

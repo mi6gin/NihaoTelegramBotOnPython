@@ -5,8 +5,8 @@ from .catalog import router as catalog_router
 from .support import router as support_router
 from .dedinside import router as dedinside_router
 
-# Объединяющий роутер для пользовательской зоны
-router = Router(name="user_main")
+# Роутер для пользовательских команд
+router = Router(name="user_commands")
 
 router.include_routers(
     start_router,
@@ -15,4 +15,3 @@ router.include_routers(
     support_router,
     dedinside_router
 )
-

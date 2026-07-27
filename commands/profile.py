@@ -74,7 +74,6 @@ async def set_language(callback: CallbackQuery, db_user: User, i18n: I18nContext
     await callback.answer()
     lang = callback.data.split("_")[-1]
     if lang in ("ru", "en"):
-        # Устанавливаем локаль в контексте и триггерим менеджер (обновление БД)
         await i18n.set_locale(lang)
         
     await callback.message.edit_text(

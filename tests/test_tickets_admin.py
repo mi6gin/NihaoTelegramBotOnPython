@@ -15,7 +15,7 @@ from routers.admin.tickets import (
     cancel_alert_reply,
     close_alert_ticket_no_reply
 )
-from routers.user.catalog import select_catalog_item
+from commands.catalog import select_catalog_item
 from database.models.ticket import Ticket
 from database.models.user import User
 

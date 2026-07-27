@@ -4,7 +4,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery
 from aiogram_i18n import I18nContext
 
-from routers.user.support import process_cancel_support
+from commands.support import process_cancel_support
 from routers.admin.mailing import process_cancel_mailing
 from routers.admin.users import process_cancel_manage_users
 
@@ -24,7 +24,7 @@ async def test_process_cancel_support():
     i18n = MagicMock(spec=I18nContext)
     i18n.get = MagicMock(return_value="Support Title")
 
-    with patch("routers.user.support.IsAdmin") as mock_is_admin:
+    with patch("commands.support.IsAdmin") as mock_is_admin:
         # Мокаем проверку на админа
         mock_is_admin.return_value = AsyncMock(return_value=False)
         

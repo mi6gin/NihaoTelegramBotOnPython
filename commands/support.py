@@ -31,14 +31,12 @@ async def start_support_ticket(callback: CallbackQuery, state: FSMContext, i18n:
     """
     await callback.answer()
     
-    # Редактируем текущее сообщение меню, добавляя инлайн-кнопку отмены
     prompt_msg = await callback.message.edit_text(
         i18n.get("support-prompt"),
         reply_markup=get_cancel_inline_keyboard(i18n, callback_data="cancel_support")
     )
     
     await state.set_state(SupportStates.waiting_for_ticket_message)
-    # Сохраняем ID сообщения-подсказки, чтобы удалить его после ввода текста
     await state.update_data(prompt_msg_id=prompt_msg.message_id)
 
 
@@ -74,7 +72,6 @@ async def process_ticket_message(
         await message.answer(i18n.get("err-ticket-length"))
         return
 
-    # Удаляем сообщение-подсказку с кнопкой отмены, чтобы не засорять чат неактивными кнопками
     data = await state.get_data()
     prompt_msg_id = data.get("prompt_msg_id")
     if prompt_msg_id:
@@ -83,13 +80,11 @@ async def process_ticket_message(
         except Exception:
             pass
 
-    # Создаем тикет в БД
     ticket = await TicketRepository.create(session, db_user.telegram_id, ticket_text)
     
     await state.clear()
     logger.info(f"User {db_user.telegram_id} created support ticket #{ticket.id}")
     
-    # Отправляем мгновенные алерты всем администраторам
     from database.repository.user_repo import UserRepository
     from aiogram.utils.keyboard import InlineKeyboardBuilder
     

@@ -1,5 +1,5 @@
 from aiogram import Router
-from .user import router as user_router
+from commands import router as commands_router
 from .admin import router as admin_router
 from .errors.error_handler import router as error_router
 
@@ -14,7 +14,7 @@ def get_main_router() -> Router:
     # чтобы избежать ложных срабатываний общих пользовательских фильтров
     main_router.include_routers(
         admin_router,
-        user_router,
+        commands_router,
         error_router
     )
     

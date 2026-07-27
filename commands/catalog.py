@@ -9,7 +9,6 @@ from database.models.user import User
 
 router = Router(name="user_catalog")
 
-# Моковые данные каталога с поддержкой ключей локализации
 CATALOG_ITEMS = {
     "theme_classic": {
         "title_key": "catalog-classic-title",
@@ -71,7 +70,6 @@ async def show_catalog_item(callback: CallbackQuery, i18n: I18nContext):
     builder.button(text=i18n.get("btn-back-to-catalog"), callback_data="user_catalog")
     builder.adjust(1)
     
-    # Получаем локализованные значения
     title = i18n.get(item_data["title_key"])
     description = i18n.get(item_data["desc_key"])
     

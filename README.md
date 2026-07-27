@@ -53,14 +53,15 @@ NihaoTelegramBotOnPython/
 ├── docker-compose.yml          # Скрипт запуска в Docker Compose.
 │
 ├── alembic/                    # Миграции структуры базы данных.
+├── commands/                   # 👈 Все пользовательские команды (/start, /dedinside, profile, support).
 ├── config/                     # Настройки проекта (Pydantic Settings).
 ├── data/                       # Хранилище базы данных SQLite (nihao_chan.db).
-├── database/                   # Модели SQLAlchemy (users, tickets) и репозитории (CRUD).
+├── database/                   # Модели SQLAlchemy (users, tickets, bot_texts) и репозитории (CRUD).
 ├── filters/                    # Фильтры прав (IsAdmin, IsPrivate).
 ├── keyboards/                  # Глобальные инлайн-клавиатуры (меню, профиль, админка, отмена).
 ├── locales/                    # Файлы переводов Fluent (.ftl) для ru и en.
 ├── middlewares/                # Прослойки (БД, баны, i18n, антифлуд, логирование).
-├── routers/                    # Модули фич (хендлеры, FSM состояния и кнопки по фичам).
+├── routers/                    # Админ-панель и служебные роутеры (admin, errors).
 ├── utils/                      # Логирование, DynamicTextManager и валидаторы.
 └── tests/                      # Набор автоматических тестов (pytest).
 ```

@@ -14,8 +14,6 @@ from utils.text_manager import text_manager
 router = Router(name="user_dedinside")
 
 
-# --- FSM СОСТОЯНИЯ КОМАНДЫ /DEDINSIDE ---
-
 class DedinsideStates(StatesGroup):
     """
     Состояния FSM только для команды /dedinside.
@@ -24,8 +22,6 @@ class DedinsideStates(StatesGroup):
     waiting_for_message = State()  # Ожидание текстового сообщения от пользователя
     sending_spam = State()         # Процесс последовательной отправки и удаления сообщений
 
-
-# --- КЛАВИАТУРЫ КОМАНДЫ /DEDINSIDE ---
 
 def get_dedinside_menu_keyboard(i18n: I18nContext) -> InlineKeyboardMarkup:
     """
@@ -47,8 +43,6 @@ def get_dedinside_cancel_keyboard(i18n: I18nContext) -> InlineKeyboardMarkup:
     builder.button(text=i18n.get("dedinside-btn-cancel"), callback_data="dedinside_cancel")
     return builder.as_markup()
 
-
-# --- ХЕНДЛЕРЫ КОМАНДЫ /DEDINSIDE ---
 
 @router.message(Command("dedinside"), IsPrivate(), StateFilter("*"))
 async def cmd_dedinside(message: Message, state: FSMContext, i18n: I18nContext):

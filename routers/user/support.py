@@ -1,17 +1,25 @@
 from aiogram import Router, F
 from aiogram.types import Message, CallbackQuery
 from aiogram.fsm.context import FSMContext
+from aiogram.fsm.state import StatesGroup, State
 from aiogram_i18n import I18nContext
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from database.models.user import User
 from database.repository.ticket_repo import TicketRepository
 from keyboards.inline.cancel import get_cancel_inline_keyboard
 from keyboards.inline.user_menu import get_user_menu_keyboard
-from states.support import SupportStates
 from filters.is_private import IsPrivate
 from filters.is_admin import IsAdmin
-from sqlalchemy.ext.asyncio import AsyncSession
 from utils.logger import logger
+
+
+class SupportStates(StatesGroup):
+    """
+    Состояния FSM для отправки обращения в поддержку.
+    """
+    waiting_for_ticket_message = State()
+
 
 router = Router(name="user_support")
 

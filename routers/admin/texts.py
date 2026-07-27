@@ -1,21 +1,44 @@
 from aiogram import Router, F
-from aiogram.types import CallbackQuery, Message
+from aiogram.types import CallbackQuery, Message, InlineKeyboardMarkup
 from aiogram.fsm.context import FSMContext
+from aiogram.fsm.state import StatesGroup, State
+from aiogram.utils.keyboard import InlineKeyboardBuilder
 from sqlalchemy.ext.asyncio import AsyncSession
 from aiogram_i18n import I18nContext
 
-from database.repository.bot_text_repo import BotTextRepository
-from keyboards.inline.admin_texts import get_admin_texts_keyboard
 from keyboards.inline.cancel import get_cancel_inline_keyboard
-from states.admin_texts import AdminTextStates
 from filters.is_private import IsPrivate
 from filters.is_admin import IsAdmin
 from utils.logger import logger
-
 from utils.text_manager import text_manager
 
 router = Router(name="admin_texts")
 
+
+# --- FSM СОСТОЯНИЯ ---
+
+class AdminTextStates(StatesGroup):
+    """
+    Состояния FSM для редактирования динамических текстов бота администратором.
+    """
+    waiting_for_text_content = State()
+
+
+# --- КЛАВИАТУРЫ ---
+
+def get_admin_texts_keyboard(i18n: I18nContext) -> InlineKeyboardMarkup:
+    """
+    Клавиатура выбора динамического текста для редактирования.
+    """
+    builder = InlineKeyboardBuilder()
+    builder.button(text="✏️ /dedinside (RU)", callback_data="admin_edit_text_dedinside_title_ru")
+    builder.button(text="✏️ /dedinside (EN)", callback_data="admin_edit_text_dedinside_title_en")
+    builder.button(text=i18n.get("btn-admin-panel"), callback_data="admin_panel_entry")
+    builder.adjust(2, 1)
+    return builder.as_markup()
+
+
+# --- ХЕНДЛЕРЫ ---
 
 @router.callback_query(F.data == "admin_texts_manage", IsPrivate(), IsAdmin())
 async def show_admin_texts_menu(callback: CallbackQuery, session: AsyncSession, i18n: I18nContext, state: FSMContext):

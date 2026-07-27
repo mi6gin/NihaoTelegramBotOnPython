@@ -4,8 +4,8 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, CallbackQuery
 from aiogram_i18n import I18nContext
 
-from states.dedinside import DedinsideStates
 from routers.user.dedinside import (
+    DedinsideStates,
     cmd_dedinside,
     process_dedinside_cancel,
     process_count_selection,

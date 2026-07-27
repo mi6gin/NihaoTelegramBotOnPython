@@ -8,10 +8,18 @@ from aiogram_i18n import I18nContext
 from database.repository.ticket_repo import TicketRepository
 from keyboards.inline.admin_panel import get_admin_panel_keyboard
 from keyboards.inline.cancel import get_cancel_inline_keyboard
+from aiogram.fsm.state import StatesGroup, State
 from filters.is_private import IsPrivate
 from filters.is_admin import IsAdmin
-from states.admin_tickets import AdminTicketStates
 from utils.logger import logger
+
+
+class AdminTicketStates(StatesGroup):
+    """
+    Состояния FSM для ответов администратора на тикеты пользователей.
+    """
+    waiting_for_reply = State()
+
 
 router = Router(name="admin_tickets")
 

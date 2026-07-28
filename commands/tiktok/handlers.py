@@ -169,10 +169,10 @@ async def tiktok_unbind_yes(callback: CallbackQuery, session: AsyncSession, db_u
 # 📌 ПУНКТ 3: МИКРО-МЕНЮ /Mtiktok (Только звук MP3)
 # =====================================================================
 
-@router.message(Command("Mtiktok"), IsPrivate())
+@router.message(Command("mtiktok", "Mtiktok", ignore_case=True), IsPrivate())
 async def cmd_mtiktok(message: Message, state: FSMContext, i18n: I18nContext):
     """
-    Старт микро-меню /Mtiktok (Скачивание только аудио).
+    Старт микро-меню /mtiktok (Скачивание только аудио).
     """
     await state.clear()
     await state.set_state(TikTokStates.waiting_for_audio_link)
@@ -236,7 +236,7 @@ async def process_audio_link_input(message: Message, state: FSMContext, db_user:
 # 📌 ПУНКТ 4: МИКРО-МЕНЮ /Ptiktok (Слайдшоу / Карусели картинок)
 # =====================================================================
 
-@router.message(Command("Ptiktok"), IsPrivate())
+@router.message(Command("ptiktok", "Ptiktok", ignore_case=True), IsPrivate())
 async def cmd_ptiktok(message: Message, state: FSMContext, i18n: I18nContext):
     """
     Старт микро-меню /Ptiktok (Скачивание слайдшоу).

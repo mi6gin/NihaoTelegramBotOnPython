@@ -40,16 +40,22 @@ async def set_bot_commands(bot: Bot):
     
     for attempt in range(1, 4):
         try:
-            await bot.set_my_commands(commands_ru, request_timeout=15)
-            await bot.set_my_commands(commands_ru, language_code="ru", request_timeout=15)
-            await bot.set_my_commands(commands_en, language_code="en", request_timeout=15)
-            logger.info("Локализованные команды меню успешно зарегистрированы.")
+            # Сначала регистрируем основное меню
+            await bot.set_my_commands(commands_ru, request_timeout=30)
+            # Затем локализованные версии
+            try:
+                await bot.set_my_commands(commands_ru, language_code="ru", request_timeout=30)
+                await bot.set_my_commands(commands_en, language_code="en", request_timeout=30)
+            except Exception as loc_e:
+                logger.debug(f"Локализованные меню пропущены: {loc_e}")
+                
+            logger.info("Команды меню бота успешно зарегистрированы.")
             break
         except Exception as e:
             if attempt == 3:
-                logger.warning(f"Не удалось установить меню команд после 3 попыток: {e}")
+                logger.warning(f"Не удалось установить меню команд (проблемы сети Telegram API): {e}")
             else:
-                await asyncio.sleep(2)
+                await asyncio.sleep(3)
 
 
 async def schedule_midnight_restart():
@@ -121,16 +127,14 @@ async def main():
     dp.message.outer_middleware(LoggingMiddleware())
     dp.callback_query.outer_middleware(LoggingMiddleware())
 
-    # 4. Подключение общего роутера хендлеров
+    # 5. Подключение общего роутера хендлеров
     dp.include_router(get_main_router())
-
-    # 5. Установка команд меню
-    await set_bot_commands(bot)
 
     # 6. Пропуск накопившихся обновлений перед стартом (drop_pending_updates)
     await bot.delete_webhook(drop_pending_updates=True)
 
-    # Запускаем фоновый планировщик перезапуска в полночь
+    # 7. Фоновый запуск установки меню команд и полночного перезапуска
+    asyncio.create_task(set_bot_commands(bot))
     asyncio.create_task(schedule_midnight_restart())
 
     # 7. Запуск polling-а

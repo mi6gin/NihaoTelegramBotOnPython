@@ -103,9 +103,13 @@ async def main():
     async with AsyncSessionLocal() as session:
         await text_manager.load_cache(session)
 
-    # 2. Инициализация бота с явным таймаутом сетевой сессии AiohttpSession
+    # 2. Инициализация бота с явным принудительным IPv4 (для исключения IPv6 таймаутов на macOS)
+    import socket
+    from aiohttp import TCPConnector
     from aiogram.client.session.aiohttp import AiohttpSession
-    session = AiohttpSession(timeout=30.0)
+
+    connector = TCPConnector(family=socket.AF_INET)
+    session = AiohttpSession(connector=connector, timeout=30.0)
 
     bot = Bot(
         token=settings.bot_token.get_secret_value(),

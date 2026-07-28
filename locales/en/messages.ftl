@@ -207,11 +207,20 @@ btn-tiktok-bind = ➕ Link Account
 btn-tiktok-edit = ✏️ Edit Account
 btn-tiktok-unbind = 🗑️ Unlink Account
 btn-tiktok-unbind-confirm = ✅ Yes, Unlink
+btn-tiktok-refresh-stats = 🔄 Refresh Stats
 tiktok-account-none = not linked ❌
 tiktok-account-title =
     📱 <b>TikTok Account Management</b>
 
     Linked account: <b>{ $username }</b>
+tiktok-account-stats-title =
+    📱 <b>TikTok Profile: @{ $username }</b>
+    ───────────────────
+    👤 <b>Name:</b> { $nickname }
+    👥 <b>Followers:</b> { $followers }
+    ❤️ <b>Total Likes:</b> { $likes }
+    🎬 <b>Videos Uploaded:</b> { $videos }
+    📝 <b>Bio:</b> <i>«{ $bio }»</i>
 tiktok-bind-prompt = Send your TikTok username (with or without @):
 tiktok-bind-success = ✅ TikTok account <b>@{ $username }</b> successfully linked!
 tiktok-unbind-prompt = Are you sure you want to unlink account <b>@{ $username }</b>?

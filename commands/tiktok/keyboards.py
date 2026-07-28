@@ -10,10 +10,11 @@ def get_tiktok_account_menu_keyboard(username: Optional[str], i18n: I18nContext)
     """
     builder = InlineKeyboardBuilder()
     if username:
+        builder.button(text=i18n.get("btn-tiktok-refresh-stats"), callback_data="tiktok_account_menu")
         builder.button(text=i18n.get("btn-tiktok-edit"), callback_data="tiktok_bind_username")
         builder.button(text=i18n.get("btn-tiktok-unbind"), callback_data="tiktok_unbind_confirm")
         builder.button(text=i18n.get("btn-back-to-menu"), callback_data="back_to_menu")
-        builder.adjust(2, 1)
+        builder.adjust(1, 2, 1)
     else:
         builder.button(text=i18n.get("btn-tiktok-bind"), callback_data="tiktok_bind_username")
         builder.button(text=i18n.get("btn-back-to-menu"), callback_data="back_to_menu")

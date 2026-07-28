@@ -103,6 +103,41 @@ class TikTokParser:
         }
 
     @staticmethod
+    async def fetch_user_info(username: str) -> Optional[Dict[str, Any]]:
+        """
+        Запрашивает публичный профиль и статистику пользователя TikTok по его юзернейму.
+        """
+        clean_username = username.lstrip("@").strip()
+        api_url = f"https://www.tikwm.com/api/user/info?unique_id={clean_username}"
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+        }
+        try:
+            async with aiohttp.ClientSession(headers=headers) as session:
+                async with session.get(api_url, timeout=aiohttp.ClientTimeout(total=10)) as resp:
+                    if resp.status == 200:
+                        res = await resp.json()
+                        if res.get("code") == 0 and "data" in res:
+                            data = res["data"]
+                            user = data.get("user", {})
+                            stats = data.get("stats", {})
+                            return {
+                                "username": user.get("unique_id", clean_username),
+                                "nickname": user.get("nickname", clean_username),
+                                "avatar": user.get("avatarLarger") or user.get("avatarMedium") or user.get("avatarThumb"),
+                                "bio": user.get("signature", ""),
+                                "verified": bool(user.get("verified", False)),
+                                "followers": stats.get("followerCount", 0),
+                                "following": stats.get("followingCount", 0),
+                                "likes": stats.get("heartCount", 0) or stats.get("heart", 0),
+                                "videos": stats.get("videoCount", 0),
+                            }
+        except Exception as e:
+            logger.warning(f"Error fetching TikTok user info for {username}: {e}")
+
+        return None
+
+    @staticmethod
     async def fetch_tikwm_info(url: str) -> Optional[Dict[str, Any]]:
         """
         Запрашивает данные о посте через свободный API Tikwm (надёжный фолбек).

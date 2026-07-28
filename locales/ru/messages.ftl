@@ -207,11 +207,20 @@ btn-tiktok-bind = ➕ Привязать аккаунт
 btn-tiktok-edit = ✏️ Изменить аккаунт
 btn-tiktok-unbind = 🗑️ Отвязать аккаунт
 btn-tiktok-unbind-confirm = ✅ Да, отвязать
+btn-tiktok-refresh-stats = 🔄 Обновить статистику
 tiktok-account-none = не привязан ❌
 tiktok-account-title =
     📱 <b>Управление аккаунтом TikTok</b>
 
     Привязанный аккаунт: <b>{ $username }</b>
+tiktok-account-stats-title =
+    📱 <b>Профиль TikTok: @{ $username }</b>
+    ───────────────────
+    👤 <b>Имя:</b> { $nickname }
+    👥 <b>Подписчики:</b> { $followers }
+    ❤️ <b>Всего лайков:</b> { $likes }
+    🎬 <b>Опубликовано видео:</b> { $videos }
+    📝 <b>Описание:</b> <i>«{ $bio }»</i>
 tiktok-bind-prompt = Отправьте ваш юзернейм TikTok (с символом @ или без него):
 tiktok-bind-success = ✅ Аккаунт TikTok <b>@{ $username }</b> успешно привязан!
 tiktok-unbind-prompt = Вы уверены, что хотите отвязать аккаунт <b>@{ $username }</b>?

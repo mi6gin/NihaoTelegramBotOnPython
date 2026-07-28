@@ -55,22 +55,39 @@ def format_user_caption(user: User, url: str) -> str:
 @router.callback_query(F.data == "tiktok_account_menu", IsPrivate())
 async def show_tiktok_account_menu(callback: CallbackQuery, db_user: User, i18n: I18nContext, state: FSMContext):
     """
-    Экран 1.1: Главное окно раздела "Аккаунт TikTok".
+    Экран 1.1: Главное окно раздела "Аккаунт TikTok" со статистикой профиля.
     """
     await state.clear()
     await callback.answer()
 
     if db_user.tiktok_username:
-        text = (
-            "📱 <b>Раздел «Аккаунт TikTok»</b>\n\n"
-            f"┣ <b>Привязанный аккаунт:</b> @{db_user.tiktok_username}\n"
-            "┗ <b>Статус:</b> Активен ✅"
-        )
+        stats = await TikTokParser.fetch_user_info(db_user.tiktok_username)
+        if stats:
+            followers_fmt = f"{stats['followers']:,}".replace(",", " ")
+            likes_fmt = f"{stats['likes']:,}".replace(",", " ")
+            videos_fmt = f"{stats['videos']:,}".replace(",", " ")
+            bio_text = stats['bio'] if stats['bio'] else "—"
+
+            text = i18n.get(
+                "tiktok-account-stats-title",
+                username=stats['username'],
+                nickname=stats['nickname'],
+                followers=followers_fmt,
+                likes=likes_fmt,
+                videos=videos_fmt,
+                bio=bio_text
+            )
+        else:
+            text = (
+                f"📱 <b>Раздел «Аккаунт TikTok»</b>\n\n"
+                f"┣ <b>Привязанный аккаунт:</b> @{db_user.tiktok_username}\n"
+                "┗ <b>Статус:</b> Активен ✅"
+            )
     else:
         text = (
             "📱 <b>Раздел «Аккаунт TikTok»</b>\n\n"
             "У вас пока не привязан аккаунт TikTok.\n"
-            "Привяжите ваш юзернейм, чтобы использовать персональные возможности!"
+            "Привяжите ваш юзернейм, чтобы просматривать статистику и использовать персональные функции!"
         )
 
     await callback.message.edit_text(

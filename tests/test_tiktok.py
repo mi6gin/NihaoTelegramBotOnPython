@@ -71,7 +71,7 @@ async def test_show_tiktok_account_menu():
     callback.message.edit_text = AsyncMock()
     state = AsyncMock(spec=FSMContext)
     i18n = MagicMock(spec=I18nContext)
-    i18n.get = MagicMock(side_effect=lambda k, **kw: str(k))
+    i18n.get = MagicMock(side_effect=lambda k, **kw: f"{k} {kw.get('username', '')}")
     db_user = User(telegram_id=123, username="testuser", first_name="Test", tiktok_username="mytiktok")
 
     await show_tiktok_account_menu(callback, db_user, i18n, state)

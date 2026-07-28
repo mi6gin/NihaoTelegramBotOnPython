@@ -103,10 +103,13 @@ async def main():
     async with AsyncSessionLocal() as session:
         await text_manager.load_cache(session)
 
-    # 2. Инициализация бота и диспетчера.
-    # Настраиваем HTML разметку сообщений по умолчанию для красивого форматирования.
+    # 2. Инициализация бота с явным таймаутом сетевой сессии AiohttpSession
+    from aiogram.client.session.aiohttp import AiohttpSession
+    session = AiohttpSession(timeout=30.0)
+
     bot = Bot(
         token=settings.bot_token.get_secret_value(),
+        session=session,
         default=DefaultBotProperties(parse_mode=ParseMode.HTML)
     )
     
@@ -115,11 +118,6 @@ async def main():
     dp = Dispatcher(storage=storage)
 
     # 3. Регистрация Middleware (прослоек).
-    # Порядок регистрации критически важен:
-    # 1) Сессия БД — открывает транзакцию и передает ее в следующие слои.
-    # 2) Баны — проверяет статус блокировки и регистрирует новых пользователей.
-    # 3) Антифлуд (Троттлинг) — защищает бот от спам-сообщений.
-    # 4) Логирование — записывает поступающие события в логи.
     dp.update.outer_middleware(DbSessionMiddleware(AsyncSessionLocal))
     dp.update.outer_middleware(BanMiddleware())
     i18n_middleware.setup(dp)
@@ -127,13 +125,16 @@ async def main():
     dp.message.outer_middleware(LoggingMiddleware())
     dp.callback_query.outer_middleware(LoggingMiddleware())
 
-    # 5. Подключение общего роутера хендлеров
+    # 4. Подключение общего роутера хендлеров
     dp.include_router(get_main_router())
 
-    # 6. Пропуск накопившихся обновлений перед стартом (drop_pending_updates)
-    await bot.delete_webhook(drop_pending_updates=True)
+    # 5. Сброс вебхука с защитой по таймауту
+    try:
+        await bot.delete_webhook(drop_pending_updates=True, request_timeout=10)
+    except Exception as e:
+        logger.warning(f"Пропуск сброса вебхука из-за задержки сети: {e}")
 
-    # 7. Фоновый запуск установки меню команд и полночного перезапуска
+    # 6. Фоновый запуск установки меню команд и планировщика
     asyncio.create_task(set_bot_commands(bot))
     asyncio.create_task(schedule_midnight_restart())
 

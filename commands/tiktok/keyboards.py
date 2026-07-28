@@ -90,25 +90,22 @@ def get_tiktok_comments_button_keyboard(short_id: str) -> InlineKeyboardMarkup:
     return builder.as_markup()
 
 
-def get_tiktok_comments_pagination_keyboard(short_id: str, cursor: int, has_more: bool) -> InlineKeyboardMarkup:
+def get_tiktok_comment_card_keyboard(short_id: str, index: int, total: int) -> InlineKeyboardMarkup:
     """
-    Инлайн-кнопки пагинации для просмотра комментариев (⬅️ Пред. | Стр. X | След. ➡️).
+    Инлайн-кнопки карусели для пошагового просмотра карточек комментариев (◀️ Назад | 1/N | Вперед ▶️).
     """
     builder = InlineKeyboardBuilder()
     row_count = 0
 
-    if cursor > 0:
-        prev_cursor = max(0, cursor - 5)
-        builder.button(text="⬅️ Пред.", callback_data=f"tt_comm_page_{short_id}_{prev_cursor}")
+    if index > 1:
+        builder.button(text="◀️ Назад", callback_data=f"tt_card_{short_id}_{index - 1}")
         row_count += 1
 
-    page_num = (cursor // 5) + 1
-    builder.button(text=f"Стр. {page_num}", callback_data="noop")
+    builder.button(text=f"{index} / {total}", callback_data="noop")
     row_count += 1
 
-    if has_more:
-        next_cursor = cursor + 5
-        builder.button(text="След. ➡️", callback_data=f"tt_comm_page_{short_id}_{next_cursor}")
+    if index < total:
+        builder.button(text="Вперед ▶️", callback_data=f"tt_card_{short_id}_{index + 1}")
         row_count += 1
 
     builder.adjust(row_count)
@@ -119,5 +116,6 @@ def get_tiktok_comments_pagination_keyboard(short_id: str, cursor: int, has_more
 
     builder.attach(close_builder)
     return builder.as_markup()
+
 
 

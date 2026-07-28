@@ -499,63 +499,89 @@ from .keyboards import (
     get_tiktok_slides_grid_keyboard,
     get_tiktok_cancel_keyboard,
     get_tiktok_comments_button_keyboard,
-    get_tiktok_comments_pagination_keyboard,
+    get_tiktok_comment_card_keyboard,
 )
 
+# Кэш комментариев для мгновенного переключения карточек
+_comments_cache = {}
+
 # =====================================================================
-# 📌 ПРОСМОТР И ПАГИНАЦИЯ КОММЕНТАРИЕВ TIKTOK
+# 📌 ПРОСМОТР КОММЕНТАРИЕВ TIKTOK (Карточки-карусели)
 # =====================================================================
+
+async def render_comment_card(callback: CallbackQuery, short_id: str, index: int, is_edit: bool = False):
+    """
+    Универсальная функция рендеринга карточки одного комментария.
+    """
+    comments = _comments_cache.get(short_id, [])
+    if not comments or index < 1 or index > len(comments):
+        await callback.answer("⚠️ Комментарий не найден.", show_alert=True)
+        return
+
+    comment = comments[index - 1]
+    total = len(comments)
+    likes_formatted = f"{comment['likes']:,}".replace(",", " ")
+
+    text = (
+        f"💬 <b>Комментарий [ {index} из {total} ]</b>\n"
+        "───────────────────\n"
+        f"👤 <b>Автор:</b> {comment['author']}\n"
+        f"❤️ <b>Лайков:</b> {likes_formatted}\n\n"
+        f"💬 <i>«{comment['text']}»</i>"
+    )
+
+    reply_markup = get_tiktok_comment_card_keyboard(short_id, index, total)
+
+    if is_edit:
+        try:
+            await callback.message.edit_text(text=text, reply_markup=reply_markup)
+        except Exception:
+            await callback.message.answer(text=text, reply_markup=reply_markup)
+    else:
+        await callback.message.answer(text=text, reply_markup=reply_markup)
+
 
 @router.callback_query(F.data.startswith("tt_comm_"), IsPrivate(), StateFilter("*"))
-async def show_tiktok_comments(callback: CallbackQuery):
+async def start_tiktok_comments_card(callback: CallbackQuery):
     """
-    Показывает первую страницу комментариев к посту TikTok с кнопками пагинации.
+    Показывает первую карточку комментария при клике на '💬 Комментарии'.
     """
-    data = callback.data.replace("tt_comm_", "")
-    if data.startswith("page_"):
-        parts = data.split("_")
-        short_id = parts[1]
-        cursor = int(parts[2])
-        is_edit = True
-    else:
-        short_id = data
-        cursor = 0
-        is_edit = False
-
+    short_id = callback.data.replace("tt_comm_", "")
     url = _post_urls_cache.get(short_id)
+
     if not url:
         await callback.answer("⚠️ Ссылка на пост устарела или не найдена.", show_alert=True)
         return
 
     await callback.answer("⏳ Загрузка комментариев...")
-    res = await TikTokParser.fetch_comments(url, cursor=cursor, count=5)
+    res = await TikTokParser.fetch_comments(url, cursor=0, count=15)
     comments = res.get("comments", [])
-    has_more = res.get("has_more", False)
 
     if not comments:
-        await callback.answer("💬 Больше нет комментариев или они закрыты автором.", show_alert=True)
+        await callback.answer("💬 К этому видео не найдено комментариев или они закрыты автором.", show_alert=True)
         return
 
-    page_num = (cursor // 5) + 1
-    lines = [f"💬 <b>Комментарии TikTok (Стр. {page_num}):</b>\n"]
-    for idx, c in enumerate(comments, cursor + 1):
-        lines.append(f"{idx}. 👤 <b>{c['author']}</b> (❤️ {c['likes']}):\n   <i>«{c['text']}»</i>\n")
+    _comments_cache[short_id] = comments
+    await render_comment_card(callback, short_id, index=1, is_edit=False)
 
-    reply_markup = get_tiktok_comments_pagination_keyboard(short_id, cursor, has_more)
 
-    if is_edit:
-        try:
-            await callback.message.edit_text(text="\n".join(lines), reply_markup=reply_markup)
-        except Exception:
-            await callback.message.answer(text="\n".join(lines), reply_markup=reply_markup)
-    else:
-        await callback.message.answer(text="\n".join(lines), reply_markup=reply_markup)
+@router.callback_query(F.data.startswith("tt_card_"), IsPrivate(), StateFilter("*"))
+async def navigate_tiktok_comment_card(callback: CallbackQuery):
+    """
+    Переключение карточек комментариев (◀️ Назад / Вперед ▶️).
+    """
+    await callback.answer()
+    parts = callback.data.split("_")
+    short_id = parts[2]
+    index = int(parts[3])
+
+    await render_comment_card(callback, short_id, index=index, is_edit=True)
 
 
 @router.callback_query(F.data == "tiktok_comments_close", IsPrivate(), StateFilter("*"))
 async def close_tiktok_comments(callback: CallbackQuery):
     """
-    Удаляет сообщение с комментариями.
+    Удаляет сообщение с карточкой комментариев.
     """
     await callback.answer()
     try:

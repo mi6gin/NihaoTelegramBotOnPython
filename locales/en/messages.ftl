@@ -201,3 +201,42 @@ dedinside-already-active = ⚠️ Command /dedinside is already active! Finish t
 dedinside-prompt-text = Write a message to send ({ $count } times):
 dedinside-warn-only-text = ⚠️ Please send a text message only!
 
+# TikTok Module
+btn-tiktok-account = 📱 TikTok Account
+btn-tiktok-bind = ➕ Link Account
+btn-tiktok-edit = ✏️ Edit Account
+btn-tiktok-unbind = 🗑️ Unlink Account
+btn-tiktok-unbind-confirm = ✅ Yes, Unlink
+tiktok-account-none = not linked ❌
+tiktok-account-title =
+    📱 <b>TikTok Account Management</b>
+
+    Linked account: <b>{ $username }</b>
+tiktok-bind-prompt = Send your TikTok username (with or without @):
+tiktok-bind-success = ✅ TikTok account <b>@{ $username }</b> successfully linked!
+tiktok-unbind-prompt = Are you sure you want to unlink account <b>@{ $username }</b>?
+tiktok-unbind-success = 🗑️ TikTok account successfully unlinked.
+
+# TikTok Comments & Media
+btn-tiktok-comments = 💬 Comments
+btn-tiktok-translate = 🌐 Translate
+btn-tiktok-hide-comments = ❌ Hide Comments
+tiktok-comment-header = 💬 <b>Comment [ { $index } of { $total } ]</b>
+tiktok-comment-author = 👤 <b>Author:</b> { $author }
+tiktok-comment-likes = ❤️ <b>Likes:</b> { $likes }
+tiktok-comment-trans-header = 🌐 <b>Translation ({ $lang }):</b>
+
+# TikTok Micro-menus /Mtiktok & /Ptiktok
+tiktok-mtiktok-prompt =
+    🎵 <b>TikTok Audio Downloader</b>
+
+    Send a link to a TikTok video or photo post:
+tiktok-ptiktok-prompt =
+    🖼️ <b>TikTok Slideshow Downloader</b>
+
+    Send a link to a TikTok photo slideshow:
+btn-tiktok-download-all = 📥 Download All ({ $total })
+btn-tiktok-select-slides = 🔢 Select Specific Slides
+btn-tiktok-download-selected = 📥 Download Selected ({ $count })
+btn-tiktok-back-mode = 🔙 Back to Mode Selection
+

@@ -201,3 +201,42 @@ dedinside-already-active = ⚠️ Команда /dedinside уже активн�
 dedinside-prompt-text = Напишите сообщение для отправки ({ $count } раз):
 dedinside-warn-only-text = ⚠️ Пожалуйста, отправьте именно текстовое сообщение!
 
+# TikTok Модуль
+btn-tiktok-account = 📱 Аккаунт TikTok
+btn-tiktok-bind = ➕ Привязать аккаунт
+btn-tiktok-edit = ✏️ Изменить аккаунт
+btn-tiktok-unbind = 🗑️ Отвязать аккаунт
+btn-tiktok-unbind-confirm = ✅ Да, отвязать
+tiktok-account-none = не привязан ❌
+tiktok-account-title =
+    📱 <b>Управление аккаунтом TikTok</b>
+
+    Привязанный аккаунт: <b>{ $username }</b>
+tiktok-bind-prompt = Отправьте ваш юзернейм TikTok (с символом @ или без него):
+tiktok-bind-success = ✅ Аккаунт TikTok <b>@{ $username }</b> успешно привязан!
+tiktok-unbind-prompt = Вы уверены, что хотите отвязать аккаунт <b>@{ $username }</b>?
+tiktok-unbind-success = 🗑️ Аккаунт TikTok успешно отвязан.
+
+# TikTok Комментарии и Медиа
+btn-tiktok-comments = 💬 Комментарии
+btn-tiktok-translate = 🌐 Перевести
+btn-tiktok-hide-comments = ❌ Скрыть комментарии
+tiktok-comment-header = 💬 <b>Комментарий [ { $index } из { $total } ]</b>
+tiktok-comment-author = 👤 <b>Автор:</b> { $author }
+tiktok-comment-likes = ❤️ <b>Лайков:</b> { $likes }
+tiktok-comment-trans-header = 🌐 <b>Перевод на { $lang }:</b>
+
+# TikTok Micro-menus /Mtiktok и /Ptiktok
+tiktok-mtiktok-prompt =
+    🎵 <b>Скачивание аудио из TikTok</b>
+
+    Отправьте ссылку на видео или фото-пост TikTok:
+tiktok-ptiktok-prompt =
+    🖼️ <b>Скачивание слайдшоу из TikTok</b>
+
+    Отправьте ссылку на фото-слайдшоу TikTok:
+btn-tiktok-download-all = 📥 Скачать все ({ $total })
+btn-tiktok-select-slides = 🔢 Выбрать конкретные слайды
+btn-tiktok-download-selected = 📥 Скачать выбранное ({ $count })
+btn-tiktok-back-mode = 🔙 Назад в выбор режима
+

@@ -518,7 +518,8 @@ async def render_comment_card(
     index: int,
     is_edit: bool = False,
     translated_text: Optional[str] = None,
-    target_lang: str = "ru"
+    target_lang: str = "ru",
+    i18n: Optional[I18nContext] = None
 ):
     """
     Универсальная функция рендеринга карточки одного комментария с опциональным переводом.
@@ -532,20 +533,37 @@ async def render_comment_card(
     total = len(comments)
     likes_formatted = f"{comment['likes']:,}".replace(",", " ")
 
-    lines = [
-        f"💬 <b>Комментарий [ {index} из {total} ]</b>\n"
-        "───────────────────\n"
-        f"👤 <b>Автор:</b> {comment['author']}\n"
-        f"❤️ <b>Лайков:</b> {likes_formatted}\n\n"
-        f"💬 <i>«{comment['text']}»</i>"
-    ]
-
-    if translated_text:
-        lang_label = "русский" if target_lang == "ru" else "английский"
-        lines.append(f"\n\n🌐 <b>Перевод на {lang_label}:</b>\n<i>«{translated_text}»</i>")
+    if i18n:
+        header = i18n.get("tiktok-comment-header", index=index, total=total)
+        author_label = i18n.get("tiktok-comment-author", author=comment['author'])
+        likes_label = i18n.get("tiktok-comment-likes", likes=likes_formatted)
+        lines = [
+            f"{header}\n"
+            "───────────────────\n"
+            f"{author_label}\n"
+            f"{likes_label}\n\n"
+            f"💬 <i>«{comment['text']}»</i>"
+        ]
+        if translated_text:
+            lang_label = "русский" if target_lang == "ru" else "English"
+            trans_header = i18n.get("tiktok-comment-trans-header", lang=lang_label)
+            lines.append(f"\n\n{trans_header}\n<i>«{translated_text}»</i>")
+    else:
+        lines = [
+            f"💬 <b>Комментарий [ {index} из {total} ]</b>\n"
+            "───────────────────\n"
+            f"👤 <b>Автор:</b> {comment['author']}\n"
+            f"❤️ <b>Лайков:</b> {likes_formatted}\n\n"
+            f"💬 <i>«{comment['text']}»</i>"
+        ]
+        if translated_text:
+            lang_label = "русский" if target_lang == "ru" else "английский"
+            lines.append(f"\n\n🌐 <b>Перевод на {lang_label}:</b>\n<i>«{translated_text}»</i>")
 
     text = "".join(lines)
-    reply_markup = get_tiktok_comment_card_keyboard(short_id, index, total, is_translated=bool(translated_text))
+    reply_markup = get_tiktok_comment_card_keyboard(
+        short_id, index, total, is_translated=bool(translated_text), i18n=i18n
+    )
 
     if is_edit:
         try:
@@ -557,7 +575,7 @@ async def render_comment_card(
 
 
 @router.callback_query(F.data.startswith("tt_comm_"), IsPrivate(), StateFilter("*"))
-async def start_tiktok_comments_card(callback: CallbackQuery):
+async def start_tiktok_comments_card(callback: CallbackQuery, i18n: Optional[I18nContext] = None):
     """
     Показывает первую карточку комментария при клике на '💬 Комментарии'.
     """
@@ -577,11 +595,11 @@ async def start_tiktok_comments_card(callback: CallbackQuery):
         return
 
     _comments_cache[short_id] = comments
-    await render_comment_card(callback, short_id, index=1, is_edit=False)
+    await render_comment_card(callback, short_id, index=1, is_edit=False, i18n=i18n)
 
 
 @router.callback_query(F.data.startswith("tt_card_"), IsPrivate(), StateFilter("*"))
-async def navigate_tiktok_comment_card(callback: CallbackQuery):
+async def navigate_tiktok_comment_card(callback: CallbackQuery, i18n: Optional[I18nContext] = None):
     """
     Переключение карточек комментариев (◀️ Назад / Вперед ▶️).
     """
@@ -590,11 +608,11 @@ async def navigate_tiktok_comment_card(callback: CallbackQuery):
     short_id = parts[2]
     index = int(parts[3])
 
-    await render_comment_card(callback, short_id, index=index, is_edit=True)
+    await render_comment_card(callback, short_id, index=index, is_edit=True, i18n=i18n)
 
 
 @router.callback_query(F.data.startswith("tt_tr_"), IsPrivate(), StateFilter("*"))
-async def translate_tiktok_comment_card(callback: CallbackQuery, db_user: User):
+async def translate_tiktok_comment_card(callback: CallbackQuery, db_user: User, i18n: Optional[I18nContext] = None):
     """
     Переводит текущий комментарий на выбранный язык пользователя.
     """
@@ -626,7 +644,8 @@ async def translate_tiktok_comment_card(callback: CallbackQuery, db_user: User):
         index=index,
         is_edit=True,
         translated_text=translated,
-        target_lang=target_lang
+        target_lang=target_lang,
+        i18n=i18n
     )
 
 

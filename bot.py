@@ -23,25 +23,33 @@ async def set_bot_commands(bot: Bot):
     commands_en = [
         BotCommand(command="start", description="Launch the bot / Menu 🌸"),
         BotCommand(command="help", description="Show help info ℹ️"),
-        BotCommand(command="about", description="About Nihao-chan ✨")
+        BotCommand(command="about", description="About Nihao-chan ✨"),
+        BotCommand(command="dedinside", description="Special dedinside mode 🖤"),
+        BotCommand(command="mtiktok", description="Download TikTok audio MP3 🎵"),
+        BotCommand(command="ptiktok", description="Download TikTok slideshow 🖼️"),
     ]
     
     commands_ru = [
         BotCommand(command="start", description="Запустить бота / Меню 🌸"),
         BotCommand(command="help", description="Показать справку ℹ️"),
-        BotCommand(command="about", description="О Нихао-тян ✨")
+        BotCommand(command="about", description="О Нихао-тян ✨"),
+        BotCommand(command="dedinside", description="Особый режим dedinside 🖤"),
+        BotCommand(command="mtiktok", description="Скачать аудио из TikTok 🎵"),
+        BotCommand(command="ptiktok", description="Скачать слайдшоу из TikTok 🖼️"),
     ]
     
-    try:
-        # Русский язык по умолчанию для всех остальных локалей
-        await bot.set_my_commands(commands_ru)
-        
-        # Индивидуальные настройки меню для RU и EN локалей
-        await bot.set_my_commands(commands_ru, language_code="ru")
-        await bot.set_my_commands(commands_en, language_code="en")
-        logger.info("Локализованные команды меню успешно зарегистрированы.")
-    except Exception as e:
-        logger.error(f"Ошибка при установке меню команд: {e}")
+    for attempt in range(1, 4):
+        try:
+            await bot.set_my_commands(commands_ru, request_timeout=15)
+            await bot.set_my_commands(commands_ru, language_code="ru", request_timeout=15)
+            await bot.set_my_commands(commands_en, language_code="en", request_timeout=15)
+            logger.info("Локализованные команды меню успешно зарегистрированы.")
+            break
+        except Exception as e:
+            if attempt == 3:
+                logger.warning(f"Не удалось установить меню команд после 3 попыток: {e}")
+            else:
+                await asyncio.sleep(2)
 
 
 async def schedule_midnight_restart():

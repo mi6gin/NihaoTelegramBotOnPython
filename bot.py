@@ -105,11 +105,10 @@ async def main():
 
     # 2. Инициализация бота с явным принудительным IPv4 (для исключения IPv6 таймаутов на macOS)
     import socket
-    from aiohttp import TCPConnector
     from aiogram.client.session.aiohttp import AiohttpSession
 
-    connector = TCPConnector(family=socket.AF_INET)
-    session = AiohttpSession(connector=connector, timeout=30.0)
+    session = AiohttpSession()
+    session._connector_init["family"] = socket.AF_INET
 
     bot = Bot(
         token=settings.bot_token.get_secret_value(),

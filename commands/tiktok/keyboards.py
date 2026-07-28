@@ -90,9 +90,9 @@ def get_tiktok_comments_button_keyboard(short_id: str) -> InlineKeyboardMarkup:
     return builder.as_markup()
 
 
-def get_tiktok_comment_card_keyboard(short_id: str, index: int, total: int) -> InlineKeyboardMarkup:
+def get_tiktok_comment_card_keyboard(short_id: str, index: int, total: int, is_translated: bool = False) -> InlineKeyboardMarkup:
     """
-    Инлайн-кнопки карусели для пошагового просмотра карточек комментариев (◀️ Назад | 1/N | Вперед ▶️).
+    Инлайн-кнопки карусели для пошагового просмотра карточек комментариев (◀️ Назад | 1/N | Вперед ▶️ + 🌐 Перевести).
     """
     builder = InlineKeyboardBuilder()
     row_count = 0
@@ -110,11 +110,13 @@ def get_tiktok_comment_card_keyboard(short_id: str, index: int, total: int) -> I
 
     builder.adjust(row_count)
 
-    close_builder = InlineKeyboardBuilder()
-    close_builder.button(text="❌ Скрыть комментарии", callback_data="tiktok_comments_close")
-    close_builder.adjust(1)
+    action_builder = InlineKeyboardBuilder()
+    if not is_translated:
+        action_builder.button(text="🌐 Перевести", callback_data=f"tt_tr_{short_id}_{index}")
+    action_builder.button(text="❌ Скрыть комментарии", callback_data="tiktok_comments_close")
+    action_builder.adjust(1)
 
-    builder.attach(close_builder)
+    builder.attach(action_builder)
     return builder.as_markup()
 
 

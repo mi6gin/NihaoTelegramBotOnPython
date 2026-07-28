@@ -1,5 +1,6 @@
 import os
 import asyncio
+from typing import Optional, List, Dict, Any
 from aiogram import Router, F
 from aiogram.filters import Command, StateFilter
 from aiogram.types import Message, CallbackQuery, InputMediaPhoto, FSInputFile
@@ -492,6 +493,8 @@ async def auto_download_tiktok_link(message: Message, db_user: User):
         await message.answer("❌ К сожалению, не удалось скачать это видео из TikTok.")
 
 
+from deep_translator import GoogleTranslator
+
 from .keyboards import (
     get_tiktok_account_menu_keyboard,
     get_tiktok_unbind_confirm_keyboard,
@@ -506,12 +509,19 @@ from .keyboards import (
 _comments_cache = {}
 
 # =====================================================================
-# 📌 ПРОСМОТР КОММЕНТАРИЕВ TIKTOK (Карточки-карусели)
+# 📌 ПРОСМОТР И ПЕРЕВОД КОММЕНТАРИЕВ TIKTOK (Карточки-карусели)
 # =====================================================================
 
-async def render_comment_card(callback: CallbackQuery, short_id: str, index: int, is_edit: bool = False):
+async def render_comment_card(
+    callback: CallbackQuery,
+    short_id: str,
+    index: int,
+    is_edit: bool = False,
+    translated_text: Optional[str] = None,
+    target_lang: str = "ru"
+):
     """
-    Универсальная функция рендеринга карточки одного комментария.
+    Универсальная функция рендеринга карточки одного комментария с опциональным переводом.
     """
     comments = _comments_cache.get(short_id, [])
     if not comments or index < 1 or index > len(comments):
@@ -522,15 +532,20 @@ async def render_comment_card(callback: CallbackQuery, short_id: str, index: int
     total = len(comments)
     likes_formatted = f"{comment['likes']:,}".replace(",", " ")
 
-    text = (
+    lines = [
         f"💬 <b>Комментарий [ {index} из {total} ]</b>\n"
         "───────────────────\n"
         f"👤 <b>Автор:</b> {comment['author']}\n"
         f"❤️ <b>Лайков:</b> {likes_formatted}\n\n"
         f"💬 <i>«{comment['text']}»</i>"
-    )
+    ]
 
-    reply_markup = get_tiktok_comment_card_keyboard(short_id, index, total)
+    if translated_text:
+        lang_label = "русский" if target_lang == "ru" else "английский"
+        lines.append(f"\n\n🌐 <b>Перевод на {lang_label}:</b>\n<i>«{translated_text}»</i>")
+
+    text = "".join(lines)
+    reply_markup = get_tiktok_comment_card_keyboard(short_id, index, total, is_translated=bool(translated_text))
 
     if is_edit:
         try:
@@ -576,6 +591,43 @@ async def navigate_tiktok_comment_card(callback: CallbackQuery):
     index = int(parts[3])
 
     await render_comment_card(callback, short_id, index=index, is_edit=True)
+
+
+@router.callback_query(F.data.startswith("tt_tr_"), IsPrivate(), StateFilter("*"))
+async def translate_tiktok_comment_card(callback: CallbackQuery, db_user: User):
+    """
+    Переводит текущий комментарий на выбранный язык пользователя.
+    """
+    parts = callback.data.split("_")
+    short_id = parts[2]
+    index = int(parts[3])
+
+    comments = _comments_cache.get(short_id, [])
+    if not comments or index < 1 or index > len(comments):
+        await callback.answer("⚠️ Комментарий не найден.", show_alert=True)
+        return
+
+    comment = comments[index - 1]
+    target_lang = db_user.language if db_user and db_user.language in ["ru", "en"] else "ru"
+
+    await callback.answer("⏳ Перевод с помощью Google Translate...")
+    try:
+        translated = await asyncio.to_thread(
+            lambda: GoogleTranslator(source="auto", target=target_lang).translate(comment["text"])
+        )
+    except Exception as e:
+        logger.error(f"Translation error: {e}")
+        await callback.answer("⚠️ Не удалось выполнить перевод.", show_alert=True)
+        return
+
+    await render_comment_card(
+        callback,
+        short_id=short_id,
+        index=index,
+        is_edit=True,
+        translated_text=translated,
+        target_lang=target_lang
+    )
 
 
 @router.callback_query(F.data == "tiktok_comments_close", IsPrivate(), StateFilter("*"))

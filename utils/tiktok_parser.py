@@ -55,6 +55,40 @@ class TikTokParser:
             return url
 
     @staticmethod
+    async def fetch_comments(url: str, count: int = 5) -> List[Dict[str, Any]]:
+        """
+        Запрашивает топ комментариев к посту TikTok.
+        """
+        resolved_url = await TikTokParser.resolve_url(url)
+        api_url = f"https://www.tikwm.com/api/comment/list?url={resolved_url}&count={count}"
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+        }
+        comments = []
+        try:
+            async with aiohttp.ClientSession(headers=headers) as session:
+                async with session.get(api_url, timeout=aiohttp.ClientTimeout(total=10)) as resp:
+                    if resp.status == 200:
+                        res = await resp.json()
+                        if res.get("code") == 0 and "data" in res:
+                            raw_comments = res["data"].get("comments", [])
+                            for c in raw_comments[:count]:
+                                user_info = c.get("user", {})
+                                nickname = user_info.get("nickname") or user_info.get("unique_id") or "Аноним"
+                                text = c.get("text", "")
+                                likes = c.get("digg_count", 0)
+                                if text:
+                                    comments.append({
+                                        "author": nickname,
+                                        "text": text,
+                                        "likes": likes
+                                    })
+        except Exception as e:
+            logger.warning(f"Error fetching TikTok comments for {url}: {e}")
+
+        return comments
+
+    @staticmethod
     async def fetch_tikwm_info(url: str) -> Optional[Dict[str, Any]]:
         """
         Запрашивает данные о посте через свободный API Tikwm (надёжный фолбек).

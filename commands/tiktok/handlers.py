@@ -20,9 +20,22 @@ from .keyboards import (
     get_tiktok_photo_mode_keyboard,
     get_tiktok_slides_grid_keyboard,
     get_tiktok_cancel_keyboard,
+    get_tiktok_comments_button_keyboard,
 )
 
 router = Router(name="tiktok_main")
+
+# Кэш кратких идентификаторов постов для инлайн-кнопок комментариев
+_post_urls_cache = {}
+
+
+def register_post_url(url: str) -> str:
+    """
+    Генерирует короткий ключ для URL поста и сохраняет в кэше.
+    """
+    short_id = str(abs(hash(url)) % 10000000)
+    _post_urls_cache[short_id] = url
+    return short_id
 
 
 def format_user_caption(user: User, url: str) -> str:
@@ -445,12 +458,16 @@ async def auto_download_tiktok_link(message: Message, db_user: User):
     info = await TikTokParser.get_post_info(tiktok_url)
     caption = format_user_caption(db_user, tiktok_url)
 
+    short_id = register_post_url(tiktok_url)
+    reply_kb = get_tiktok_comments_button_keyboard(short_id)
+
     # 1. Если это фото-слайдшоу
     if info.get("type") == "photo" and info.get("images"):
         images = info["images"]
         media_group = [InputMediaPhoto(media=url, caption=caption if i == 0 else None) for i, url in enumerate(images[:10])]
         try:
             await message.answer_media_group(media=media_group)
+            await message.answer("💬 Комментарии к этому слайдшоу:", reply_markup=reply_kb)
         except Exception as e:
             logger.error(f"Auto-download photo error: {e}")
             await message.answer(f"❌ Ошибка при отправке слайдшоу: {e}")
@@ -461,7 +478,7 @@ async def auto_download_tiktok_link(message: Message, db_user: User):
     if video_file and os.path.exists(video_file):
         try:
             video_input = FSInputFile(path=video_file)
-            await message.answer_video(video=video_input, caption=caption)
+            await message.answer_video(video=video_input, caption=caption, reply_markup=reply_kb)
         except Exception as e:
             logger.error(f"Auto-download video error: {e}")
             await message.answer(f"❌ Ошибка при отправке видео: {e}")
@@ -473,3 +490,52 @@ async def auto_download_tiktok_link(message: Message, db_user: User):
                     pass
     else:
         await message.answer("❌ К сожалению, не удалось скачать это видео из TikTok.")
+
+
+# =====================================================================
+# 📌 ПРОСМОТР КОММЕНТАРИЕВ TIKTOK
+# =====================================================================
+
+@router.callback_query(F.data.startswith("tt_comm_"), IsPrivate(), StateFilter("*"))
+async def show_tiktok_comments(callback: CallbackQuery):
+    """
+    Показывает топ комментариев к посту TikTok.
+    """
+    short_id = callback.data.replace("tt_comm_", "")
+    url = _post_urls_cache.get(short_id)
+
+    if not url:
+        await callback.answer("⚠️ Ссылка на пост устарела или не найдена.", show_alert=True)
+        return
+
+    await callback.answer("⏳ Загрузка комментариев...")
+    comments = await TikTokParser.fetch_comments(url, count=5)
+
+    if not comments:
+        await callback.answer("💬 К этому видео не найдено комментариев или они закрыты автором.", show_alert=True)
+        return
+
+    lines = ["💬 <b>Топ комментариев TikTok:</b>\n"]
+    for idx, c in enumerate(comments, 1):
+        lines.append(f"{idx}. 👤 <b>{c['author']}</b> (❤️ {c['likes']}):\n   <i>«{c['text']}»</i>\n")
+
+    builder = InlineKeyboardBuilder()
+    builder.button(text="❌ Скрыть комментарии", callback_data="tiktok_comments_close")
+
+    await callback.message.answer(
+        text="\n".join(lines),
+        reply_markup=builder.as_markup()
+    )
+
+
+@router.callback_query(F.data == "tiktok_comments_close", IsPrivate(), StateFilter("*"))
+async def close_tiktok_comments(callback: CallbackQuery):
+    """
+    Удаляет сообщение с комментариями.
+    """
+    await callback.answer()
+    try:
+        await callback.message.delete()
+    except Exception:
+        pass
+

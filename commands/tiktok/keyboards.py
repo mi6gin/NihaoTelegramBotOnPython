@@ -79,3 +79,13 @@ def get_tiktok_cancel_keyboard(i18n: I18nContext, callback_data: str = "tiktok_c
     builder = InlineKeyboardBuilder()
     builder.button(text=i18n.get("btn-cancel"), callback_data=callback_data)
     return builder.as_markup()
+
+
+def get_tiktok_comments_button_keyboard(short_id: str) -> InlineKeyboardMarkup:
+    """
+    Инлайн-кнопка "💬 Комментарии" под отправленным видео/слайдшоу.
+    """
+    builder = InlineKeyboardBuilder()
+    builder.button(text="💬 Комментарии", callback_data=f"tt_comm_{short_id}")
+    return builder.as_markup()
+

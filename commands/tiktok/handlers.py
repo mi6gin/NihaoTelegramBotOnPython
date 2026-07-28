@@ -78,17 +78,9 @@ async def show_tiktok_account_menu(callback: CallbackQuery, db_user: User, i18n:
                 bio=bio_text
             )
         else:
-            text = (
-                f"📱 <b>Раздел «Аккаунт TikTok»</b>\n\n"
-                f"┣ <b>Привязанный аккаунт:</b> @{db_user.tiktok_username}\n"
-                "┗ <b>Статус:</b> Активен ✅"
-            )
+            text = i18n.get("tiktok-account-active-text", username=db_user.tiktok_username)
     else:
-        text = (
-            "📱 <b>Раздел «Аккаунт TikTok»</b>\n\n"
-            "У вас пока не привязан аккаунт TikTok.\n"
-            "Привяжите ваш юзернейм, чтобы просматривать статистику и использовать персональные функции!"
-        )
+        text = i18n.get("tiktok-account-unlinked-text")
 
     await callback.message.edit_text(
         text=text,
@@ -105,8 +97,7 @@ async def start_bind_username(callback: CallbackQuery, state: FSMContext, i18n: 
     await state.set_state(TikTokStates.waiting_for_username)
 
     prompt_msg = await callback.message.edit_text(
-        "✍️ <b>Отправьте ваш юзернейм в TikTok в чат:</b>\n\n"
-        "Пример: <code>@username</code> или <code>username</code>",
+        i18n.get("tiktok-bind-prompt-msg"),
         reply_markup=get_tiktok_cancel_keyboard(i18n, callback_data="tiktok_account_menu")
     )
     await state.update_data(prompt_msg_id=prompt_msg.message_id)
@@ -119,7 +110,7 @@ async def process_username_input(message: Message, state: FSMContext, session: A
     """
     raw_username = message.text.strip().lstrip("@")
     if not raw_username or len(raw_username) < 2 or len(raw_username) > 30:
-        await message.answer("⚠️ Некорректный юзернейм! Отправьте юзернейм еще раз:")
+        await message.answer(i18n.get("tiktok-err-invalid-username"))
         return
 
     data = await state.get_data()
@@ -140,12 +131,7 @@ async def process_username_input(message: Message, state: FSMContext, session: A
     await state.clear()
 
     # Показываем обновившееся меню
-    text = (
-        "📱 <b>Раздел «Аккаунт TikTok»</b>\n\n"
-        f"┣ <b>Привязанный аккаунт:</b> @{raw_username}\n"
-        "┗ <b>Статус:</b> Активен ✅\n\n"
-        "✅ <i>Аккаунт успешно привязан!</i>"
-    )
+    text = i18n.get("tiktok-bind-success-msg", username=raw_username)
     await message.answer(
         text=text,
         reply_markup=get_tiktok_account_menu_keyboard(raw_username, i18n)
@@ -159,7 +145,7 @@ async def tiktok_unbind_confirm(callback: CallbackQuery, db_user: User, i18n: I1
     """
     await callback.answer()
     await callback.message.edit_text(
-        f"❓ Вы уверены, что хотите отвязать аккаунт <b>@{db_user.tiktok_username}</b>?",
+        i18n.get("tiktok-unbind-confirm-msg", username=db_user.tiktok_username),
         reply_markup=get_tiktok_unbind_confirm_keyboard(i18n)
     )
 
@@ -169,14 +155,10 @@ async def tiktok_unbind_yes(callback: CallbackQuery, session: AsyncSession, db_u
     """
     Отвязывает аккаунт в СУБД и возвращает в меню.
     """
-    await callback.answer("Аккаунт отвязан!", show_alert=True)
+    await callback.answer(i18n.get("tiktok-unbind-alert"), show_alert=True)
     await UserRepository.set_tiktok_username(session, db_user.telegram_id, None)
     
-    text = (
-        "📱 <b>Раздел «Аккаунт TikTok»</b>\n\n"
-        "У вас пока не привязан аккаунт TikTok.\n"
-        "Привяжите ваш юзернейм, чтобы использовать персональные возможности!"
-    )
+    text = i18n.get("tiktok-account-unlinked-text")
     await callback.message.edit_text(
         text=text,
         reply_markup=get_tiktok_account_menu_keyboard(None, i18n)
@@ -196,8 +178,7 @@ async def cmd_mtiktok(message: Message, state: FSMContext, i18n: I18nContext):
     await state.set_state(TikTokStates.waiting_for_audio_link)
 
     prompt_msg = await message.answer(
-        "🎵 <b>Микро-меню: Скачивание аудио из TikTok</b>\n\n"
-        "Отправьте ссылку на видео TikTok в чат, чтобы получить оригинальный аудиотрек в формате MP3.",
+        i18n.get("tiktok-mtiktok-prompt-msg"),
         reply_markup=get_tiktok_cancel_keyboard(i18n, callback_data="tiktok_cancel")
     )
     await state.update_data(prompt_msg_id=prompt_msg.message_id)
@@ -210,7 +191,7 @@ async def process_audio_link_input(message: Message, state: FSMContext, db_user:
     """
     tiktok_url = TikTokParser.extract_url_from_text(message.text)
     if not tiktok_url:
-        await message.answer("⚠️ Ссылка на TikTok не распознана! Отправьте корректную ссылку:")
+        await message.answer(i18n.get("tiktok-err-url-invalid"))
         return
 
     data = await state.get_data()
@@ -228,7 +209,7 @@ async def process_audio_link_input(message: Message, state: FSMContext, db_user:
     audio_file = await TikTokParser.download_audio(tiktok_url)
 
     if not audio_file or not os.path.exists(audio_file):
-        await message.answer("❌ К сожалению, не удалось извлечь аудиозапись из этого TikTok.")
+        await message.answer(i18n.get("tiktok-err-audio-failed"))
         await state.clear()
         return
 
@@ -240,7 +221,7 @@ async def process_audio_link_input(message: Message, state: FSMContext, db_user:
         )
     except Exception as e:
         logger.error(f"Error sending audio file: {e}")
-        await message.answer("❌ Ошибка при отправке аудиофайла.")
+        await message.answer(i18n.get("tiktok-err-audio-send-failed"))
     finally:
         if audio_file and os.path.exists(audio_file):
             try:
@@ -264,8 +245,7 @@ async def cmd_ptiktok(message: Message, state: FSMContext, i18n: I18nContext):
     await state.set_state(TikTokStates.waiting_for_photo_link)
 
     prompt_msg = await message.answer(
-        "🖼️ <b>Микро-меню: Скачивание слайдшоу из TikTok</b>\n\n"
-        "Отправьте ссылку на фото-карусель (слайдшоу) TikTok.",
+        i18n.get("tiktok-ptiktok-prompt-msg"),
         reply_markup=get_tiktok_cancel_keyboard(i18n, callback_data="tiktok_cancel")
     )
     await state.update_data(prompt_msg_id=prompt_msg.message_id)
@@ -278,7 +258,7 @@ async def process_photo_link_input(message: Message, state: FSMContext, i18n: I1
     """
     tiktok_url = TikTokParser.extract_url_from_text(message.text)
     if not tiktok_url:
-        await message.answer("⚠️ Ссылка на TikTok не распознана! Отправьте корректную ссылку:")
+        await message.answer(i18n.get("tiktok-err-url-invalid"))
         return
 
     data = await state.get_data()
@@ -297,7 +277,7 @@ async def process_photo_link_input(message: Message, state: FSMContext, i18n: I1
 
     images = info.get("images", [])
     if not images:
-        await message.answer("❌ По этой ссылке не найдено карусели картинок/слайдшоу.")
+        await message.answer(i18n.get("tiktok-err-no-slideshow"))
         await state.clear()
         return
 
@@ -309,7 +289,7 @@ async def process_photo_link_input(message: Message, state: FSMContext, i18n: I1
         selected_slides=list()
     )
 
-    text = f"📸 <b>Найдено слайдшоу! Всего слайдов: {total_slides}</b>\n\nВыберите, как вы хотите скачать картинки:"
+    text = i18n.get("tiktok-slideshow-found-msg", total=total_slides)
     await message.answer(
         text=text,
         reply_markup=get_tiktok_photo_mode_keyboard(i18n, total_slides)
@@ -317,7 +297,7 @@ async def process_photo_link_input(message: Message, state: FSMContext, i18n: I1
 
 
 @router.callback_query(F.data == "tiktok_photo_all", IsPrivate())
-async def download_all_slides(callback: CallbackQuery, state: FSMContext, db_user: User):
+async def download_all_slides(callback: CallbackQuery, state: FSMContext, db_user: User, i18n: I18nContext):
     """
     Скачивание всех картинок из слайдшоу альбомом.
     """
@@ -327,7 +307,7 @@ async def download_all_slides(callback: CallbackQuery, state: FSMContext, db_use
     tiktok_url = data.get("tiktok_url", "")
 
     if not images:
-        await callback.message.answer("❌ Ошибка данных слайдшоу.")
+        await callback.message.answer(i18n.get("tiktok-err-slideshow-data"))
         await state.clear()
         return
 
@@ -338,7 +318,7 @@ async def download_all_slides(callback: CallbackQuery, state: FSMContext, db_use
         await callback.message.answer_media_group(media=media_group)
     except Exception as e:
         logger.error(f"Error sending media group: {e}")
-        await callback.message.answer("❌ Ошибка при отправке слайдов.")
+        await callback.message.answer(i18n.get("tiktok-err-send-slides"))
 
     await state.clear()
 
@@ -355,10 +335,8 @@ async def enter_slides_selection_mode(callback: CallbackQuery, state: FSMContext
 
     await state.set_state(TikTokStates.selecting_slides)
 
-    text = (
-        "🔢 <b>Нажимайте на кнопки с номерами слайдов, чтобы отметить нужные:</b>\n\n"
-        f"Отмечено для скачивания: [ {', '.join(map(str, sorted(selected_slides)))} ]"
-    )
+    selected_str = ", ".join(map(str, sorted(selected_slides)))
+    text = i18n.get("tiktok-select-slides-prompt", selected=selected_str)
 
     await callback.message.edit_text(
         text=text,
@@ -385,10 +363,8 @@ async def toggle_slide_selection(callback: CallbackQuery, state: FSMContext, i18
 
     await state.update_data(selected_slides=list(selected_slides))
 
-    text = (
-        "🔢 <b>Нажимайте на кнопки с номерами слайдов, чтобы отметить нужные:</b>\n\n"
-        f"Отмечено для скачивания: [ {', '.join(map(str, sorted(selected_slides)))} ]"
-    )
+    selected_str = ", ".join(map(str, sorted(selected_slides)))
+    text = i18n.get("tiktok-select-slides-prompt", selected=selected_str)
 
     await callback.message.edit_text(
         text=text,
@@ -397,7 +373,7 @@ async def toggle_slide_selection(callback: CallbackQuery, state: FSMContext, i18
 
 
 @router.callback_query(F.data == "tiktok_download_selected", TikTokStates.selecting_slides, IsPrivate())
-async def download_selected_slides(callback: CallbackQuery, state: FSMContext, db_user: User):
+async def download_selected_slides(callback: CallbackQuery, state: FSMContext, db_user: User, i18n: I18nContext):
     """
     Скачивание только отфильтрованных слайдов с проверкой на пустой выбор.
     """
@@ -407,7 +383,7 @@ async def download_selected_slides(callback: CallbackQuery, state: FSMContext, d
     selected_slides = sorted(list(set(data.get("selected_slides", []))))
 
     if not selected_slides:
-        await callback.answer("⚠️ Вы не выбрали ни одного слайда! Отметьте нужные цифры.", show_alert=True)
+        await callback.answer(i18n.get("tiktok-err-no-slides-selected"), show_alert=True)
         return
 
     await callback.answer()
@@ -420,7 +396,7 @@ async def download_selected_slides(callback: CallbackQuery, state: FSMContext, d
         await callback.message.answer_media_group(media=media_group)
     except Exception as e:
         logger.error(f"Error sending selected slides: {e}")
-        await callback.message.answer("❌ Ошибка при отправке выбранных слайдов.")
+        await callback.message.answer(i18n.get("tiktok-err-send-slides"))
 
     await state.clear()
 
@@ -434,7 +410,7 @@ async def back_to_photo_mode(callback: CallbackQuery, state: FSMContext, i18n: I
     data = await state.get_data()
     total_slides = data.get("total_slides", 0)
 
-    text = f"📸 <b>Найдено слайдшоу! Всего слайдов: {total_slides}</b>\n\nВыберите, как вы хотите скачать картинки:"
+    text = i18n.get("tiktok-slideshow-found-msg", total=total_slides)
     await callback.message.edit_text(
         text=text,
         reply_markup=get_tiktok_photo_mode_keyboard(i18n, total_slides)
@@ -459,7 +435,7 @@ async def tiktok_cancel(callback: CallbackQuery, state: FSMContext):
 # =====================================================================
 
 @router.message(IsPrivate(), StateFilter(None), F.text)
-async def auto_download_tiktok_link(message: Message, db_user: User):
+async def auto_download_tiktok_link(message: Message, db_user: User, i18n: I18nContext):
     """
     Автоматически распознает ссылки на TikTok в тексте сообщения и отправляет видео/слайдшоу.
     """
@@ -477,7 +453,7 @@ async def auto_download_tiktok_link(message: Message, db_user: User):
     caption = format_user_caption(db_user, tiktok_url)
 
     short_id = register_post_url(tiktok_url)
-    reply_kb = get_tiktok_comments_button_keyboard(short_id)
+    reply_kb = get_tiktok_comments_button_keyboard(short_id, i18n=i18n)
 
     # 1. Если это фото-слайдшоу
     if info.get("type") == "photo" and info.get("images"):
@@ -485,10 +461,10 @@ async def auto_download_tiktok_link(message: Message, db_user: User):
         media_group = [InputMediaPhoto(media=url, caption=caption if i == 0 else None) for i, url in enumerate(images[:10])]
         try:
             await message.answer_media_group(media=media_group)
-            await message.answer("💬 Комментарии к этому слайдшоу:", reply_markup=reply_kb)
+            await message.answer(i18n.get("btn-tiktok-comments"), reply_markup=reply_kb)
         except Exception as e:
             logger.error(f"Auto-download photo error: {e}")
-            await message.answer(f"❌ Ошибка при отправке слайдшоу: {e}")
+            await message.answer(i18n.get("tiktok-auto-photo-error", error=str(e)))
         return
 
     # 2. Если это обычное видео
@@ -499,7 +475,7 @@ async def auto_download_tiktok_link(message: Message, db_user: User):
             await message.answer_video(video=video_input, caption=caption, reply_markup=reply_kb)
         except Exception as e:
             logger.error(f"Auto-download video error: {e}")
-            await message.answer(f"❌ Ошибка при отправке видео: {e}")
+            await message.answer(i18n.get("tiktok-auto-video-error", error=str(e)))
         finally:
             if video_file and os.path.exists(video_file):
                 try:
@@ -507,7 +483,7 @@ async def auto_download_tiktok_link(message: Message, db_user: User):
                 except Exception:
                     pass
     else:
-        await message.answer("❌ К сожалению, не удалось скачать это видео из TikTok.")
+        await message.answer(i18n.get("tiktok-auto-video-failed"))
 
 
 from deep_translator import GoogleTranslator
@@ -543,7 +519,8 @@ async def render_comment_card(
     """
     comments = _comments_cache.get(short_id, [])
     if not comments or index < 1 or index > len(comments):
-        await callback.answer("⚠️ Комментарий не найден.", show_alert=True)
+        err_msg = i18n.get("tiktok-comment-not-found") if i18n else "⚠️ Комментарий не найден."
+        await callback.answer(err_msg, show_alert=True)
         return
 
     comment = comments[index - 1]
@@ -600,15 +577,18 @@ async def start_tiktok_comments_card(callback: CallbackQuery, i18n: Optional[I18
     url = _post_urls_cache.get(short_id)
 
     if not url:
-        await callback.answer("⚠️ Ссылка на пост устарела или не найдена.", show_alert=True)
+        err_msg = i18n.get("tiktok-comments-link-expired") if i18n else "⚠️ Ссылка на пост устарела или не найдена."
+        await callback.answer(err_msg, show_alert=True)
         return
 
-    await callback.answer("⏳ Загрузка комментариев...")
+    load_msg = i18n.get("tiktok-comments-loading") if i18n else "⏳ Загрузка комментариев..."
+    await callback.answer(load_msg)
     res = await TikTokParser.fetch_comments(url, cursor=0, count=15)
     comments = res.get("comments", [])
 
     if not comments:
-        await callback.answer("💬 К этому видео не найдено комментариев или они закрыты автором.", show_alert=True)
+        none_msg = i18n.get("tiktok-comments-none") if i18n else "💬 К этому видео не найдено комментариев или они закрыты автором."
+        await callback.answer(none_msg, show_alert=True)
         return
 
     _comments_cache[short_id] = comments
@@ -639,20 +619,23 @@ async def translate_tiktok_comment_card(callback: CallbackQuery, db_user: User, 
 
     comments = _comments_cache.get(short_id, [])
     if not comments or index < 1 or index > len(comments):
-        await callback.answer("⚠️ Комментарий не найден.", show_alert=True)
+        err_msg = i18n.get("tiktok-comment-not-found") if i18n else "⚠️ Комментарий не найден."
+        await callback.answer(err_msg, show_alert=True)
         return
 
     comment = comments[index - 1]
     target_lang = db_user.language if db_user and db_user.language in ["ru", "en"] else "ru"
 
-    await callback.answer("⏳ Перевод с помощью Google Translate...")
+    load_msg = i18n.get("tiktok-translation-loading") if i18n else "⏳ Перевод с помощью Google Translate..."
+    await callback.answer(load_msg)
     try:
         translated = await asyncio.to_thread(
             lambda: GoogleTranslator(source="auto", target=target_lang).translate(comment["text"])
         )
     except Exception as e:
         logger.error(f"Translation error: {e}")
-        await callback.answer("⚠️ Не удалось выполнить перевод.", show_alert=True)
+        err_msg = i18n.get("tiktok-translation-failed") if i18n else "⚠️ Не удалось выполнить перевод."
+        await callback.answer(err_msg, show_alert=True)
         return
 
     await render_comment_card(

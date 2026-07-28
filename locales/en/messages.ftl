@@ -249,3 +249,55 @@ btn-tiktok-select-slides = 🔢 Select Specific Slides
 btn-tiktok-download-selected = 📥 Download Selected ({ $count })
 btn-tiktok-back-mode = 🔙 Back to Mode Selection
 
+# TikTok Handlers & Notifications
+tiktok-account-active-text =
+    📱 <b>TikTok Account Section</b>
+
+    ┣ <b>Linked account:</b> @{ $username }
+    ┗ <b>Status:</b> Active ✅
+tiktok-account-unlinked-text =
+    📱 <b>TikTok Account Section</b>
+
+    You don't have a linked TikTok account yet.
+    Link your username to view statistics and use personalized features!
+tiktok-bind-prompt-msg =
+    ✍️ <b>Send your TikTok username in chat:</b>
+
+    Example: <code>@username</code> or <code>username</code>
+tiktok-err-invalid-username = ⚠️ Invalid username! Please send the username again:
+tiktok-bind-success-msg =
+    📱 <b>TikTok Account Section</b>
+
+    ┣ <b>Linked account:</b> @{ $username }
+    ┗ <b>Status:</b> Active ✅
+
+    ✅ <i>Account successfully linked!</i>
+tiktok-unbind-confirm-msg = ❓ Are you sure you want to unlink account <b>@{ $username }</b>?
+tiktok-unbind-alert = Account unlinked!
+tiktok-mtiktok-prompt-msg =
+    🎵 <b>Micro-menu: TikTok Audio Downloader</b>
+
+    Send a link to a TikTok video in chat to get the original audio track in MP3 format.
+tiktok-err-url-invalid = ⚠️ TikTok link not recognized! Please send a valid link:
+tiktok-err-audio-failed = ❌ Unfortunately, failed to extract audio from this TikTok.
+tiktok-err-audio-send-failed = ❌ Error sending audio file.
+tiktok-ptiktok-prompt-msg =
+    🖼️ <b>Micro-menu: TikTok Slideshow Downloader</b>
+
+    Send a link to a TikTok photo carousel (slideshow).
+tiktok-err-no-slideshow = ❌ No image carousel/slideshow found at this link.
+tiktok-slideshow-found-msg = 📸 <b>Slideshow found! Total slides: { $total }</b>\n\nChoose how you want to download images:
+tiktok-err-slideshow-data = ❌ Slideshow data error.
+tiktok-err-send-slides = ❌ Error sending slides.
+tiktok-select-slides-prompt = 🔢 <b>Click on slide number buttons to select desired ones:</b>\n\nSelected for download: [ { $selected } ]
+tiktok-err-no-slides-selected = ⚠️ You haven't selected any slides! Click on numbers to select.
+tiktok-auto-video-error = ❌ Error sending video: { $error }
+tiktok-auto-photo-error = ❌ Error sending slideshow: { $error }
+tiktok-auto-video-failed = ❌ Unfortunately, failed to download this TikTok video.
+tiktok-comment-not-found = ⚠️ Comment not found.
+tiktok-comments-link-expired = ⚠️ Post link expired or not found.
+tiktok-comments-loading = ⏳ Loading comments...
+tiktok-comments-none = 💬 No comments found for this video or comments are disabled by author.
+tiktok-translation-loading = ⏳ Translating via Google Translate...
+tiktok-translation-failed = ⚠️ Failed to perform translation.
+

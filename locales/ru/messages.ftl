@@ -249,3 +249,55 @@ btn-tiktok-select-slides = 🔢 Выбрать конкретные слайды
 btn-tiktok-download-selected = 📥 Скачать выбранное ({ $count })
 btn-tiktok-back-mode = 🔙 Назад в выбор режима
 
+# TikTok Хендлеры и Уведомления
+tiktok-account-active-text =
+    📱 <b>Раздел «Аккаунт TikTok»</b>
+
+    ┣ <b>Привязанный аккаунт:</b> @{ $username }
+    ┗ <b>Статус:</b> Активен ✅
+tiktok-account-unlinked-text =
+    📱 <b>Раздел «Аккаунт TikTok»</b>
+
+    У вас пока не привязан аккаунт TikTok.
+    Привяжите ваш юзернейм, чтобы просматривать статистику и использовать персональные функции!
+tiktok-bind-prompt-msg =
+    ✍️ <b>Отправьте ваш юзернейм в TikTok в чат:</b>
+
+    Пример: <code>@username</code> или <code>username</code>
+tiktok-err-invalid-username = ⚠️ Некорректный юзернейм! Отправьте юзернейм еще раз:
+tiktok-bind-success-msg =
+    📱 <b>Раздел «Аккаунт TikTok»</b>
+
+    ┣ <b>Привязанный аккаунт:</b> @{ $username }
+    ┗ <b>Статус:</b> Активен ✅
+
+    ✅ <i>Аккаунт успешно привязан!</i>
+tiktok-unbind-confirm-msg = ❓ Вы уверены, что хотите отвязать аккаунт <b>@{ $username }</b>?
+tiktok-unbind-alert = Аккаунт отвязан!
+tiktok-mtiktok-prompt-msg =
+    🎵 <b>Микро-меню: Скачивание аудио из TikTok</b>
+
+    Отправьте ссылку на видео TikTok в чат, чтобы получить оригинальный аудиотрек в формате MP3.
+tiktok-err-url-invalid = ⚠️ Ссылка на TikTok не распознана! Отправьте корректную ссылку:
+tiktok-err-audio-failed = ❌ К сожалению, не удалось извлечь аудиозапись из этого TikTok.
+tiktok-err-audio-send-failed = ❌ Ошибка при отправке аудиофайла.
+tiktok-ptiktok-prompt-msg =
+    🖼️ <b>Микро-меню: Скачивание слайдшоу из TikTok</b>
+
+    Отправьте ссылку на фото-карусель (слайдшоу) TikTok.
+tiktok-err-no-slideshow = ❌ По этой ссылке не найдено карусели картинок/слайдшоу.
+tiktok-slideshow-found-msg = 📸 <b>Найдено слайдшоу! Всего слайдов: { $total }</b>\n\nВыберите, как вы хотите скачать картинки:
+tiktok-err-slideshow-data = ❌ Ошибка данных слайдшоу.
+tiktok-err-send-slides = ❌ Ошибка при отправке слайдов.
+tiktok-select-slides-prompt = 🔢 <b>Нажимайте на кнопки с номерами слайдов, чтобы отметить нужные:</b>\n\nОтмечено для скачивания: [ { $selected } ]
+tiktok-err-no-slides-selected = ⚠️ Вы не выбрали ни одного слайда! Отметьте нужные цифры.
+tiktok-auto-video-error = ❌ Ошибка при отправке видео: { $error }
+tiktok-auto-photo-error = ❌ Ошибка при отправке слайдшоу: { $error }
+tiktok-auto-video-failed = ❌ К сожалению, не удалось скачать это видео из TikTok.
+tiktok-comment-not-found = ⚠️ Комментарий не найден.
+tiktok-comments-link-expired = ⚠️ Ссылка на пост устарела или не найдена.
+tiktok-comments-loading = ⏳ Загрузка комментариев...
+tiktok-comments-none = 💬 К этому видео не найдено комментариев или они закрыты автором.
+tiktok-translation-loading = ⏳ Перевод с помощью Google Translate...
+tiktok-translation-failed = ⚠️ Не удалось выполнить перевод.
+

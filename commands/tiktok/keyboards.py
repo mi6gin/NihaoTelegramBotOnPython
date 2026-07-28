@@ -89,3 +89,35 @@ def get_tiktok_comments_button_keyboard(short_id: str) -> InlineKeyboardMarkup:
     builder.button(text="💬 Комментарии", callback_data=f"tt_comm_{short_id}")
     return builder.as_markup()
 
+
+def get_tiktok_comments_pagination_keyboard(short_id: str, cursor: int, has_more: bool) -> InlineKeyboardMarkup:
+    """
+    Инлайн-кнопки пагинации для просмотра комментариев (⬅️ Пред. | Стр. X | След. ➡️).
+    """
+    builder = InlineKeyboardBuilder()
+    row_count = 0
+
+    if cursor > 0:
+        prev_cursor = max(0, cursor - 5)
+        builder.button(text="⬅️ Пред.", callback_data=f"tt_comm_page_{short_id}_{prev_cursor}")
+        row_count += 1
+
+    page_num = (cursor // 5) + 1
+    builder.button(text=f"Стр. {page_num}", callback_data="noop")
+    row_count += 1
+
+    if has_more:
+        next_cursor = cursor + 5
+        builder.button(text="След. ➡️", callback_data=f"tt_comm_page_{short_id}_{next_cursor}")
+        row_count += 1
+
+    builder.adjust(row_count)
+
+    close_builder = InlineKeyboardBuilder()
+    close_builder.button(text="❌ Скрыть комментарии", callback_data="tiktok_comments_close")
+    close_builder.adjust(1)
+
+    builder.attach(close_builder)
+    return builder.as_markup()
+
+

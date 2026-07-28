@@ -55,23 +55,32 @@ class TikTokParser:
             return url
 
     @staticmethod
-    async def fetch_comments(url: str, count: int = 5) -> List[Dict[str, Any]]:
+    async def fetch_comments(url: str, cursor: int = 0, count: int = 5) -> Dict[str, Any]:
         """
-        Запрашивает топ комментариев к посту TikTok.
+        Запрашивает список комментариев к посту TikTok с поддержкой пагинации по cursor.
         """
         resolved_url = await TikTokParser.resolve_url(url)
-        api_url = f"https://www.tikwm.com/api/comment/list?url={resolved_url}&count={count}"
+        api_url = f"https://www.tikwm.com/api/comment/list?url={resolved_url}&cursor={cursor}&count={count}"
         headers = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
         }
         comments = []
+        has_more = False
+        next_cursor = cursor + count
+        total = 0
+
         try:
             async with aiohttp.ClientSession(headers=headers) as session:
                 async with session.get(api_url, timeout=aiohttp.ClientTimeout(total=10)) as resp:
                     if resp.status == 200:
                         res = await resp.json()
                         if res.get("code") == 0 and "data" in res:
-                            raw_comments = res["data"].get("comments", [])
+                            data = res["data"]
+                            raw_comments = data.get("comments", [])
+                            has_more = bool(data.get("hasMore", False)) or (len(raw_comments) >= count)
+                            next_cursor = data.get("cursor", cursor + count)
+                            total = data.get("total", len(raw_comments))
+
                             for c in raw_comments[:count]:
                                 user_info = c.get("user", {})
                                 nickname = user_info.get("nickname") or user_info.get("unique_id") or "Аноним"
@@ -86,7 +95,12 @@ class TikTokParser:
         except Exception as e:
             logger.warning(f"Error fetching TikTok comments for {url}: {e}")
 
-        return comments
+        return {
+            "comments": comments,
+            "has_more": has_more,
+            "next_cursor": next_cursor,
+            "total": total
+        }
 
     @staticmethod
     async def fetch_tikwm_info(url: str) -> Optional[Dict[str, Any]]:

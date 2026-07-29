@@ -315,8 +315,8 @@ favorites-tiktok-title = 📱 <b>Ваши сохраненные видео TikT
 favorites-tiktok-empty = 📭 У вас пока нет сохраненных видео TikTok.\n\nНажимайте кнопку <b>«❤️ Сохранить»</b> под выкачанными видео, чтобы добавить их сюда!
 favorites-added-alert = ❤️ Видео добавлено в Понравившиеся!
 favorites-removed-alert = 💔 Видео удалено из Понравившихся.
-btn-fav-save = ❤️ Сохранить
-btn-fav-saved = 💖 В Понравишихся
+btn-fav-save = ❤️
+btn-fav-saved = 💖
 
 
 

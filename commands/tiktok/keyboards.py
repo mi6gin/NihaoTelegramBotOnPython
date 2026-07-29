@@ -94,9 +94,9 @@ def get_tiktok_comments_button_keyboard(
     builder = InlineKeyboardBuilder()
 
     if is_favorite:
-        fav_text = i18n.get("btn-fav-saved") if i18n else "💖 В Понравишихся"
+        fav_text = i18n.get("btn-fav-saved") if i18n else "💖"
     else:
-        fav_text = i18n.get("btn-fav-save") if i18n else "❤️ Сохранить"
+        fav_text = i18n.get("btn-fav-save") if i18n else "❤️"
 
     builder.button(text=fav_text, callback_data=f"fav_toggle_{short_id}")
 

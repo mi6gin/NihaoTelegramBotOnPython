@@ -315,8 +315,8 @@ favorites-tiktok-title = 📱 <b>Your saved TikTok videos (Total: { $total }):</
 favorites-tiktok-empty = 📭 You don't have any saved TikTok videos yet.\n\nClick the <b>"❤️ Save"</b> button under TikTok videos to see them here!
 favorites-added-alert = ❤️ Video added to Favorites!
 favorites-removed-alert = 💔 Video removed from Favorites.
-btn-fav-save = ❤️ Save
-btn-fav-saved = 💖 In Favorites
+btn-fav-save = ❤️
+btn-fav-saved = 💖
 
 
 

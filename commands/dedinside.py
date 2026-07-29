@@ -173,7 +173,7 @@ async def process_spam_text_message(message: Message, state: FSMContext, i18n: I
             status_msg = await message.bot.edit_message_text(
                 chat_id=message.chat.id,
                 message_id=menu_msg_id,
-                text=i18n.get("dedinside-active-status", current=1, total=count),
+                text=i18n.get("dedinside-active-status"),
                 reply_markup=get_dedinside_stop_keyboard(i18n)
             )
         except Exception:
@@ -183,7 +183,7 @@ async def process_spam_text_message(message: Message, state: FSMContext, i18n: I
         try:
             status_msg = await message.bot.send_message(
                 chat_id=message.chat.id,
-                text=i18n.get("dedinside-active-status", current=1, total=count),
+                text=i18n.get("dedinside-active-status"),
                 reply_markup=get_dedinside_stop_keyboard(i18n)
             )
         except Exception:

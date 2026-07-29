@@ -1,3 +1,5 @@
+"""Admin panel Telegram handlers."""
+
 import os
 from aiogram import Router, F
 from aiogram.filters import Command

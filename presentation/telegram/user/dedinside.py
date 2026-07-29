@@ -1,3 +1,5 @@
+"""Dedinside-mode Telegram handlers."""
+
 import asyncio
 from aiogram import Router, F
 from aiogram.filters import Command, StateFilter

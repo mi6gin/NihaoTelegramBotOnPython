@@ -1,3 +1,5 @@
+"""Inline-mode Telegram handlers."""
+
 from aiogram import Router
 from aiogram.types import (
     InlineQuery,

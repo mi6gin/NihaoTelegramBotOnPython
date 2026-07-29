@@ -2,7 +2,7 @@ import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
 from aiogram.types import CallbackQuery
 from aiogram_i18n import I18nContext
-from routers.admin.panel import get_logs_file
+from presentation.telegram.admin.panel import get_logs_file
 
 
 @pytest.mark.asyncio
@@ -21,7 +21,9 @@ async def test_get_logs_file_success():
 
     # Патчим проверку файла и FSInputFile, чтобы изолировать тест от файловой системы
     with patch("os.path.exists", return_value=True), \
-         patch("routers.admin.panel.FSInputFile") as mock_fs_input_file:
+         patch(
+             "presentation.telegram.admin.panel.FSInputFile"
+         ) as mock_fs_input_file:
          
         mock_fs_input_file.return_value = "mocked_document_file"
         

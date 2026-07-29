@@ -1,3 +1,5 @@
+"""Admin bot-text Telegram handlers."""
+
 from aiogram import Router, F
 from aiogram.types import CallbackQuery, Message, InlineKeyboardMarkup
 from aiogram.fsm.context import FSMContext

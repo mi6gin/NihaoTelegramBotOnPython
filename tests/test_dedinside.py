@@ -4,7 +4,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, CallbackQuery
 from aiogram_i18n import I18nContext
 
-from commands.dedinside import (
+from presentation.telegram.user.dedinside import (
     DedinsideStates,
     cmd_dedinside,
     process_dedinside_cancel,
@@ -30,7 +30,10 @@ async def test_cmd_dedinside_when_clear():
     i18n.locale = "ru"
     i18n.get = MagicMock(return_value="Title")
 
-    with patch("commands.dedinside.text_manager.get_text", return_value="Title"):
+    with patch(
+        "presentation.telegram.user.dedinside.text_manager.get_text",
+        return_value="Title",
+    ):
         await cmd_dedinside(message, state, i18n)
 
     message.answer.assert_called_once()
@@ -50,7 +53,10 @@ async def test_cmd_dedinside_when_already_active():
     i18n = MagicMock(spec=I18nContext)
     i18n.get = MagicMock(return_value="Already Active Warning")
 
-    with patch("commands.dedinside.text_manager.get_text", return_value="Already Active Warning"):
+    with patch(
+        "presentation.telegram.user.dedinside.text_manager.get_text",
+        return_value="Already Active Warning",
+    ):
         await cmd_dedinside(message, state, i18n)
 
     message.answer.assert_called_once_with("Already Active Warning")
@@ -159,4 +165,3 @@ async def test_process_spam_text_message():
 
     assert message.bot.send_message.call_count == 5
     state.clear.assert_called_once()
-

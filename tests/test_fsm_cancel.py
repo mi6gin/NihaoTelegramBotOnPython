@@ -4,9 +4,9 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery
 from aiogram_i18n import I18nContext
 
-from commands.support import process_cancel_support
-from routers.admin.mailing import process_cancel_mailing
-from routers.admin.users import process_cancel_manage_users
+from presentation.telegram.admin.mailing import process_cancel_mailing
+from presentation.telegram.admin.users import process_cancel_manage_users
+from presentation.telegram.user.support import process_cancel_support
 
 
 @pytest.mark.asyncio
@@ -24,7 +24,7 @@ async def test_process_cancel_support():
     i18n = MagicMock(spec=I18nContext)
     i18n.get = MagicMock(return_value="Support Title")
 
-    with patch("commands.support.IsAdmin") as mock_is_admin:
+    with patch("presentation.telegram.user.support.IsAdmin") as mock_is_admin:
         # Мокаем проверку на админа
         mock_is_admin.return_value = AsyncMock(return_value=False)
         

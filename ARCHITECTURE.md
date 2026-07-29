@@ -51,13 +51,18 @@ existing imports rely on it; architecturally it belongs to infrastructure.
 
 ### Telegram presentation
 
-`commands/`, `routers/`, `keyboards/`, `filters/`, and `middlewares/` are the
-Telegram presentation adapter. They translate Aiogram events into application
-service calls and render the results.
+`presentation/telegram/` contains all Aiogram routers and handlers, grouped by
+audience or feature:
 
-Shared presentation components live under `presentation/telegram/`. Feature
-handlers can be migrated there incrementally without changing the inward
-dependency rule.
+- `user/` contains user-facing routes.
+- `admin/` contains administrative routes.
+- `tiktok/` contains the TikTok feature routes, states, and keyboards.
+- `errors/` contains global error routes.
+- `router.py` composes them into the root router.
+
+Shared keyboards, filters, and middleware remain in their top-level packages.
+Together these modules translate Aiogram events into application service calls
+and render the results.
 
 ### `application/`
 

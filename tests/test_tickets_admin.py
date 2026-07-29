@@ -6,7 +6,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram_i18n import I18nContext
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from routers.admin.tickets import (
+from presentation.telegram.admin.tickets import (
     view_open_tickets, 
     close_ticket_no_reply, 
     start_ticket_reply, 
@@ -15,7 +15,7 @@ from routers.admin.tickets import (
     cancel_alert_reply,
     close_alert_ticket_no_reply
 )
-from commands.catalog import select_catalog_item
+from presentation.telegram.user.catalog import select_catalog_item
 from database.models.ticket import Ticket
 from database.models.user import User
 

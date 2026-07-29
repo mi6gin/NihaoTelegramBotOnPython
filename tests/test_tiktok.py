@@ -5,14 +5,14 @@ from aiogram.types import Message, CallbackQuery
 from aiogram_i18n import I18nContext
 
 from utils.tiktok_parser import TikTokParser
-from commands.tiktok.handlers import (
+from presentation.telegram.tiktok.handlers import (
     format_user_caption,
     cmd_mtiktok,
     cmd_ptiktok,
     show_tiktok_account_menu,
     tiktok_unbind_yes,
 )
-from commands.tiktok.states import TikTokStates
+from presentation.telegram.tiktok.states import TikTokStates
 from database.models.user import User
 
 
@@ -85,7 +85,7 @@ async def test_show_tiktok_account_menu():
 @pytest.mark.asyncio
 async def test_auto_download_tiktok_link_signature(db_session):
     """Тест вызова auto_download_tiktok_link с переданной сессией СУБД."""
-    from commands.tiktok.handlers import auto_download_tiktok_link
+    from presentation.telegram.tiktok.handlers import auto_download_tiktok_link
     message = MagicMock(spec=Message)
     message.text = "https://www.tiktok.com/@user/video/732918239103847293"
     message.chat = MagicMock(id=12345)
@@ -100,11 +100,19 @@ async def test_auto_download_tiktok_link_signature(db_session):
     i18n = MagicMock(spec=I18nContext)
     i18n.get = MagicMock(side_effect=lambda k, **kw: str(k))
 
-    with patch("utils.tiktok_parser.TikTokParser.get_post_info", new_callable=AsyncMock) as mock_info, \
-         patch("utils.tiktok_parser.TikTokParser.download_video", new_callable=AsyncMock) as mock_down:
+    with patch(
+        "presentation.telegram.tiktok.handlers.TikTokParser.get_post_info",
+        new_callable=AsyncMock,
+    ) as mock_info, patch(
+        "presentation.telegram.tiktok.handlers.TikTokParser.download_video",
+        new_callable=AsyncMock,
+    ) as mock_down, patch(
+        "presentation.telegram.tiktok.handlers.AnimatedStatus"
+    ) as animated_status:
         mock_info.return_value = {"type": "video", "resolved_url": message.text, "title": "Test Title"}
         mock_down.return_value = None
+        animated_status.return_value.set_key = AsyncMock()
+        animated_status.return_value.stop = AsyncMock()
 
         await auto_download_tiktok_link(message, db_user, db_session, i18n)
         message.answer.assert_called()
-

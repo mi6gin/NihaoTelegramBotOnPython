@@ -1,3 +1,5 @@
+"""Admin mailing Telegram handlers."""
+
 import asyncio
 import math
 import time

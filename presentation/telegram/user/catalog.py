@@ -1,3 +1,5 @@
+"""Theme catalog Telegram handlers."""
+
 from aiogram import Router, F
 from aiogram.types import CallbackQuery
 from aiogram.utils.keyboard import InlineKeyboardBuilder

@@ -1,3 +1,5 @@
+"""Favorite TikTok Telegram handlers."""
+
 import math
 import os
 from typing import Optional
@@ -10,13 +12,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from database.models.user import User as DBUser
 from database.repository.favorite_repo import FavoriteTikTokRepository
-from commands.tiktok.handlers import (
+from presentation.telegram.tiktok.handlers import (
     _post_urls_cache,
     format_user_caption,
     register_post_url,
     tiktok_service,
 )
-from commands.tiktok.keyboards import (
+from presentation.telegram.tiktok.keyboards import (
     get_favorite_categories_keyboard,
     get_favorite_tiktoks_keyboard,
     get_tiktok_comments_button_keyboard,

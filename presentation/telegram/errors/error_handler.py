@@ -1,3 +1,5 @@
+"""Global Telegram error handlers."""
+
 import html
 import traceback
 import time

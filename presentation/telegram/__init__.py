@@ -1,1 +1,1 @@
-"""Shared Telegram presentation components."""
+"""Telegram presentation adapter."""

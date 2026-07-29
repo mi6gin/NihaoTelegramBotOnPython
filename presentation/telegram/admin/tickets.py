@@ -1,3 +1,5 @@
+"""Admin support-ticket Telegram handlers."""
+
 from aiogram import Router, F, Bot
 from aiogram.types import CallbackQuery, Message
 from aiogram.utils.keyboard import InlineKeyboardBuilder

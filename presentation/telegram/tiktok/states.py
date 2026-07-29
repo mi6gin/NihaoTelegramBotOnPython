@@ -1,3 +1,5 @@
+"""TikTok finite-state-machine declarations."""
+
 from aiogram.fsm.state import StatesGroup, State
 
 

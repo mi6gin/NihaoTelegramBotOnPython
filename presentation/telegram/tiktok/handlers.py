@@ -17,8 +17,8 @@ from infrastructure.tiktok import TikTokParser
 from presentation.telegram.animated_status import AnimatedStatus
 from utils.logger import logger
 
-from commands.tiktok.states import TikTokStates
-from commands.tiktok.keyboards import (
+from presentation.telegram.tiktok.states import TikTokStates
+from presentation.telegram.tiktok.keyboards import (
     get_tiktok_account_menu_keyboard,
     get_tiktok_unbind_confirm_keyboard,
     get_tiktok_photo_mode_keyboard,
@@ -568,7 +568,7 @@ async def auto_download_tiktok_link(message: Message, db_user: User, session: As
 
 from deep_translator import GoogleTranslator
 
-from commands.tiktok.keyboards import (
+from presentation.telegram.tiktok.keyboards import (
     get_tiktok_account_menu_keyboard,
     get_tiktok_unbind_confirm_keyboard,
     get_tiktok_photo_mode_keyboard,

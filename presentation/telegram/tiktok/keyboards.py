@@ -1,3 +1,5 @@
+"""TikTok inline-keyboard builders."""
+
 from typing import Optional, Set
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from aiogram.types import InlineKeyboardMarkup
@@ -191,6 +193,5 @@ def get_tiktok_comment_card_keyboard(short_id: str, index: int, total: int, is_t
 
     builder.attach(action_builder)
     return builder.as_markup()
-
 
 

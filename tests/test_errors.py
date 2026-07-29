@@ -4,7 +4,10 @@ from unittest.mock import AsyncMock, MagicMock, patch
 from aiogram import Bot
 from aiogram.types import ErrorEvent, Update, Message, User
 from config.settings import settings
-from routers.errors.error_handler import global_error_handler, error_cache
+from presentation.telegram.errors.error_handler import (
+    error_cache,
+    global_error_handler,
+)
 
 
 @pytest.fixture(autouse=True)

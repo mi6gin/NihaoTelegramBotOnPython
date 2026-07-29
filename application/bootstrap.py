@@ -20,7 +20,7 @@ from middlewares.i18n_mw import i18n_middleware
 from middlewares.logging_mw import LoggingMiddleware
 from middlewares.menu_owner_mw import MenuOwnerMiddleware
 from middlewares.throttling_mw import ThrottlingMiddleware
-from routers import get_main_router
+from presentation.telegram.router import get_main_router
 from utils.logger import logger
 from utils.text_manager import text_manager
 

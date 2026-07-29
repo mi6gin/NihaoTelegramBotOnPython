@@ -22,7 +22,7 @@ class AdminUserManageStates(StatesGroup):
     waiting_for_target_id = State()
 
 
-@router.callback_query(F.data == "admin_users_manage", IsAdmin())
+@router.callback_query(F.data == "admin_users_manage", IsPrivate(), IsAdmin())
 async def start_manage_users(callback: CallbackQuery, state: FSMContext, i18n: I18nContext):
     """
     Запускает FSM для смены статуса бана пользователя.
@@ -38,7 +38,7 @@ async def start_manage_users(callback: CallbackQuery, state: FSMContext, i18n: I
     await state.update_data(prompt_msg_id=prompt_msg.message_id)
 
 
-@router.callback_query(F.data == "cancel_admin_users_manage", IsAdmin())
+@router.callback_query(F.data == "cancel_admin_users_manage", IsPrivate(), IsAdmin())
 async def process_cancel_manage_users(callback: CallbackQuery, state: FSMContext, i18n: I18nContext):
     """
     Отмена управления пользователями при клике на инлайн-кнопку.
@@ -53,7 +53,7 @@ async def process_cancel_manage_users(callback: CallbackQuery, state: FSMContext
     )
 
 
-@router.message(AdminUserManageStates.waiting_for_target_id, IsAdmin())
+@router.message(AdminUserManageStates.waiting_for_target_id, IsPrivate(), IsAdmin())
 async def process_ban_unban(
     message: Message, 
     state: FSMContext, 

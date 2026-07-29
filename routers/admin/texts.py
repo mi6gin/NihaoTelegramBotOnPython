@@ -40,7 +40,7 @@ def get_admin_texts_keyboard(i18n: I18nContext) -> InlineKeyboardMarkup:
 
 # --- ХЕНДЛЕРЫ ---
 
-@router.callback_query(F.data == "admin_texts_manage", IsAdmin())
+@router.callback_query(F.data == "admin_texts_manage", IsPrivate(), IsAdmin())
 async def show_admin_texts_menu(callback: CallbackQuery, session: AsyncSession, i18n: I18nContext, state: FSMContext):
     """
     Показывает меню управления динамическими текстами бота.
@@ -65,7 +65,7 @@ async def show_admin_texts_menu(callback: CallbackQuery, session: AsyncSession, 
     )
 
 
-@router.callback_query(F.data.in_({"admin_edit_text_dedinside_title_ru", "admin_edit_text_dedinside_title_en"}), IsAdmin())
+@router.callback_query(F.data.in_({"admin_edit_text_dedinside_title_ru", "admin_edit_text_dedinside_title_en"}), IsPrivate(), IsAdmin())
 async def start_editing_text(callback: CallbackQuery, state: FSMContext, i18n: I18nContext):
     """
     Запускает процесс ввода нового текста.
@@ -86,7 +86,7 @@ async def start_editing_text(callback: CallbackQuery, state: FSMContext, i18n: I
     await state.update_data(prompt_msg_id=prompt_msg.message_id)
 
 
-@router.message(AdminTextStates.waiting_for_text_content, IsAdmin(), F.text)
+@router.message(AdminTextStates.waiting_for_text_content, IsPrivate(), IsAdmin(), F.text)
 async def process_new_text_input(message: Message, state: FSMContext, session: AsyncSession, i18n: I18nContext):
     """
     Сохраняет новый текст в СУБД, обновляет RAM кэш и возвращает в меню.

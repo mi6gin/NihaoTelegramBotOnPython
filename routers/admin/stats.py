@@ -11,7 +11,7 @@ from aiogram_i18n import I18nContext
 router = Router(name="admin_stats")
 
 
-@router.callback_query(F.data == "admin_stats", IsAdmin())
+@router.callback_query(F.data == "admin_stats", IsPrivate(), IsAdmin())
 async def show_stats(callback: CallbackQuery, session: AsyncSession, i18n: I18nContext):
     """
     Отображает административную статистику по базе данных бота.

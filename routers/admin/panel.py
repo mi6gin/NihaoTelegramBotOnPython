@@ -14,7 +14,7 @@ from utils.logger import logger, LOG_FILE
 router = Router(name="admin_panel")
 
 
-@router.message(Command("admin"), IsAdmin())
+@router.message(Command("admin"), IsPrivate(), IsAdmin())
 async def cmd_admin(message: Message, session: AsyncSession, i18n: I18nContext, state: FSMContext):
     """
     Обработчик команды /admin.
@@ -30,7 +30,7 @@ async def cmd_admin(message: Message, session: AsyncSession, i18n: I18nContext, 
     )
 
 
-@router.callback_query(F.data == "admin_panel_entry", IsAdmin())
+@router.callback_query(F.data == "admin_panel_entry", IsPrivate(), IsAdmin())
 async def callback_admin(callback: CallbackQuery, session: AsyncSession, i18n: I18nContext, state: FSMContext):
     """
     Показывает панель администратора по нажатию inline-кнопки.
@@ -45,7 +45,7 @@ async def callback_admin(callback: CallbackQuery, session: AsyncSession, i18n: I
     )
 
 
-@router.callback_query(F.data == "admin_get_logs", IsAdmin())
+@router.callback_query(F.data == "admin_get_logs", IsPrivate(), IsAdmin())
 async def get_logs_file(callback: CallbackQuery, i18n: I18nContext):
     """
     Отправляет файл логов администратору в виде документа.

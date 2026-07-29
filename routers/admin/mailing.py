@@ -67,7 +67,7 @@ async def get_cached_users(session: AsyncSession) -> list:
     return users
 
 
-@router.callback_query(F.data == "admin_mailing", IsAdmin())
+@router.callback_query(F.data == "admin_mailing", IsPrivate(), IsAdmin())
 async def start_mailing_panel(callback: CallbackQuery, state: FSMContext, i18n: I18nContext):
     """
     Панель выбора аудитории для начала рассылки.
@@ -92,7 +92,7 @@ async def start_mailing_panel(callback: CallbackQuery, state: FSMContext, i18n: 
     )
 
 
-@router.callback_query(F.data == "mailing_target_filters", IsAdmin())
+@router.callback_query(F.data == "mailing_target_filters", IsPrivate(), IsAdmin())
 async def show_filters_submenu(callback: CallbackQuery, i18n: I18nContext):
     """
     Подменю фильтров таргетинга (Язык / Стиль).
@@ -112,7 +112,7 @@ async def show_filters_submenu(callback: CallbackQuery, i18n: I18nContext):
     )
 
 
-@router.callback_query(F.data == "mailing_filter_themes", IsAdmin())
+@router.callback_query(F.data == "mailing_filter_themes", IsPrivate(), IsAdmin())
 async def show_themes_submenu(callback: CallbackQuery, i18n: I18nContext):
     """
     Подменю выбора конкретного стиля оформления для таргетинга.
@@ -132,9 +132,9 @@ async def show_themes_submenu(callback: CallbackQuery, i18n: I18nContext):
     )
 
 
-@router.callback_query(F.data.startswith("mailing_target_all"), IsAdmin())
-@router.callback_query(F.data.startswith("mailing_filter_lang_"), IsAdmin())
-@router.callback_query(F.data.startswith("mailing_filter_theme_"), IsAdmin())
+@router.callback_query(F.data.startswith("mailing_target_all"), IsPrivate(), IsAdmin())
+@router.callback_query(F.data.startswith("mailing_filter_lang_"), IsPrivate(), IsAdmin())
+@router.callback_query(F.data.startswith("mailing_filter_theme_"), IsPrivate(), IsAdmin())
 async def process_audience_selection(callback: CallbackQuery, state: FSMContext, i18n: I18nContext):
     """
     Обрабатывает выбор аудитории и переводит FSM в режим ожидания контента рассылки.
@@ -175,7 +175,7 @@ async def process_audience_selection(callback: CallbackQuery, state: FSMContext,
     )
 
 
-@router.callback_query(F.data.startswith("mailing_target_list_"), IsAdmin())
+@router.callback_query(F.data.startswith("mailing_target_list_"), IsPrivate(), IsAdmin())
 async def view_target_list(
     callback: CallbackQuery, 
     session: AsyncSession, 
@@ -265,7 +265,7 @@ async def view_target_list(
     )
 
 
-@router.callback_query(F.data.startswith("mailing_list_toggle_"), IsAdmin())
+@router.callback_query(F.data.startswith("mailing_list_toggle_"), IsPrivate(), IsAdmin())
 async def toggle_list_user(
     callback: CallbackQuery, 
     session: AsyncSession, 
@@ -294,7 +294,7 @@ async def toggle_list_user(
     await view_target_list(callback, session, state, i18n, page, selected_ids=selected_ids)
 
 
-@router.callback_query(F.data == "mailing_list_confirm", IsAdmin())
+@router.callback_query(F.data == "mailing_list_confirm", IsPrivate(), IsAdmin())
 async def confirm_list_mailing(
     callback: CallbackQuery, 
     state: FSMContext, 
@@ -327,7 +327,7 @@ async def confirm_list_mailing(
     )
 
 
-@router.callback_query(F.data == "cancel_admin_mailing", IsAdmin())
+@router.callback_query(F.data == "cancel_admin_mailing", IsPrivate(), IsAdmin())
 async def process_cancel_mailing(callback: CallbackQuery, state: FSMContext, i18n: I18nContext):
     """
     Отмена рассылки при клике на инлайн-кнопку. Возвращает в меню рассылок.
@@ -342,7 +342,7 @@ async def process_cancel_mailing(callback: CallbackQuery, state: FSMContext, i18
     await start_mailing_panel(callback, state, i18n)
 
 
-@router.message(AdminMailingStates.waiting_for_content, IsAdmin())
+@router.message(AdminMailingStates.waiting_for_content, IsPrivate(), IsAdmin())
 async def process_mailing_content(
     message: Message, 
     state: FSMContext, 

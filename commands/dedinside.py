@@ -44,6 +44,15 @@ def get_dedinside_cancel_keyboard(i18n: I18nContext) -> InlineKeyboardMarkup:
     return builder.as_markup()
 
 
+def get_dedinside_stop_keyboard(i18n: I18nContext) -> InlineKeyboardMarkup:
+    """
+    Клавиатура с кнопкой "🛑 Остановить рассылку" во время активного спама.
+    """
+    builder = InlineKeyboardBuilder()
+    builder.button(text=i18n.get("dedinside-btn-stop"), callback_data="dedinside_stop")
+    return builder.as_markup()
+
+
 @router.message(Command("dedinside"), IsPrivate(), StateFilter("*"))
 async def cmd_dedinside(message: Message, state: FSMContext, i18n: I18nContext):
     """
@@ -94,6 +103,15 @@ async def process_dedinside_cancel(callback: CallbackQuery, state: FSMContext):
     await state.clear()
 
 
+@router.callback_query(F.data == "dedinside_stop", DedinsideStates.sending_spam, IsPrivate())
+async def process_dedinside_stop(callback: CallbackQuery, state: FSMContext, i18n: I18nContext):
+    """
+    Обработчик экстренной остановки рассылки.
+    """
+    await callback.answer(i18n.get("dedinside-stopped-alert"), show_alert=True)
+    await state.update_data(stopped=True)
+
+
 @router.callback_query(F.data.in_({"dedinside_count_5", "dedinside_count_10"}), DedinsideStates.selecting_count, IsPrivate())
 async def process_count_selection(callback: CallbackQuery, state: FSMContext, i18n: I18nContext):
     """
@@ -128,6 +146,7 @@ async def process_spam_text_message(message: Message, state: FSMContext, i18n: I
     """
     Обработка текста для рассылки.
     Последовательно отправляет и сразу удаляет сообщение 5 или 10 раз.
+    Сохраняет контрольное меню с кнопкой "🛑 Остановить рассылку".
     """
     data = await state.get_data()
     count = data.get("count", 5)
@@ -136,27 +155,60 @@ async def process_spam_text_message(message: Message, state: FSMContext, i18n: I
 
     await state.set_state(DedinsideStates.sending_spam)
 
-    for msg_id in (prompt_msg_id, menu_msg_id):
-        if msg_id:
-            try:
-                await message.bot.delete_message(chat_id=message.chat.id, message_id=msg_id)
-            except Exception:
-                pass
+    if prompt_msg_id:
+        try:
+            await message.bot.delete_message(chat_id=message.chat.id, message_id=prompt_msg_id)
+        except Exception:
+            pass
 
     try:
         await message.delete()
     except Exception:
         pass
 
+    # Превращаем главное меню в контрольную панель активной рассылки с кнопкой "Остановить"
+    status_msg = None
+    if menu_msg_id:
+        try:
+            status_msg = await message.bot.edit_message_text(
+                chat_id=message.chat.id,
+                message_id=menu_msg_id,
+                text=i18n.get("dedinside-active-status", current=1, total=count),
+                reply_markup=get_dedinside_stop_keyboard(i18n)
+            )
+        except Exception:
+            pass
+
+    if not status_msg:
+        try:
+            status_msg = await message.bot.send_message(
+                chat_id=message.chat.id,
+                text=i18n.get("dedinside-active-status", current=1, total=count),
+                reply_markup=get_dedinside_stop_keyboard(i18n)
+            )
+        except Exception:
+            pass
+
     spam_text = message.text
     chat_id = message.chat.id
 
-    for _ in range(count):
+    for i in range(1, count + 1):
+        curr_data = await state.get_data()
+        if curr_data.get("stopped"):
+            break
+
         try:
             sent_msg = await message.bot.send_message(chat_id=chat_id, text=spam_text)
             await asyncio.sleep(0.8)
             await message.bot.delete_message(chat_id=chat_id, message_id=sent_msg.message_id)
         except Exception as e:
             logger.warning(f"Error sending dedinside spam message: {e}")
+
+    final_menu_id = status_msg.message_id if status_msg else menu_msg_id
+    if final_menu_id:
+        try:
+            await message.bot.delete_message(chat_id=chat_id, message_id=final_menu_id)
+        except Exception:
+            pass
 
     await state.clear()

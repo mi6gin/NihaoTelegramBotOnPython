@@ -8,6 +8,7 @@ from commands.dedinside import (
     DedinsideStates,
     cmd_dedinside,
     process_dedinside_cancel,
+    process_dedinside_stop,
     process_count_selection,
     process_non_text_message,
     process_spam_text_message,
@@ -116,6 +117,24 @@ async def test_process_non_text_message():
 
 
 @pytest.mark.asyncio
+async def test_process_dedinside_stop():
+    """Тест экстренной остановки рассылки dedinside."""
+    callback = MagicMock(spec=CallbackQuery)
+    callback.answer = AsyncMock()
+
+    state = AsyncMock(spec=FSMContext)
+    state.update_data = AsyncMock()
+
+    i18n = MagicMock(spec=I18nContext)
+    i18n.get = MagicMock(return_value="Stopped Alert")
+
+    await process_dedinside_stop(callback, state, i18n)
+
+    callback.answer.assert_called_once_with("Stopped Alert", show_alert=True)
+    state.update_data.assert_called_once_with(stopped=True)
+
+
+@pytest.mark.asyncio
 async def test_process_spam_text_message():
     """Тест цикла отправки и удаления сообщений 5 раз."""
     message = MagicMock()
@@ -123,6 +142,7 @@ async def test_process_spam_text_message():
     message.chat.id = 12345
     message.bot = MagicMock()
     message.bot.delete_message = AsyncMock()
+    message.bot.edit_message_text = AsyncMock(return_value=MagicMock(message_id=100))
     message.bot.send_message = AsyncMock(return_value=MagicMock(message_id=500))
     message.delete = AsyncMock()
 
@@ -132,6 +152,7 @@ async def test_process_spam_text_message():
     state.clear = AsyncMock()
 
     i18n = MagicMock(spec=I18nContext)
+    i18n.get = MagicMock(side_effect=lambda k, **kw: str(k))
 
     with patch("asyncio.sleep", new=AsyncMock()):
         await process_spam_text_message(message, state, i18n)

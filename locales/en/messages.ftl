@@ -193,13 +193,16 @@ catalog-cyberpunk-title = ⚡ Nihao-chan Cyberpunk
 catalog-cyberpunk-desc = Neon hacker Nihao-chan theme. Writes scripts in assembler, wears cyberimplants and listens to synthwave.
 
 # Command /dedinside
-dedinside-title = Здравия желаю господа-коммунисты-бояре!
+dedinside-title = Greetings comrades-communists-boyars!
 dedinside-btn-5 = 🔁 Send 5 times
 dedinside-btn-10 = 🔁 Send 10 times
 dedinside-btn-cancel = ❌ Cancel
-dedinside-already-active = ⚠️ Command /dedinside is already active! Finish the current action or press Cancel.
+dedinside-btn-stop = 🛑 Stop Mailing
+dedinside-active-status = ⚡ <b>Dedinside mode active ({ $current } of { $total })...</b>
+dedinside-stopped-alert = 🛑 Mailing successfully stopped!
+dedinside-already-active = ⚠️ Command /dedinside is already active! Finish current action or press Cancel.
 dedinside-prompt-text = Write a message to send ({ $count } times):
-dedinside-warn-only-text = ⚠️ Please send a text message only!
+dedinside-warn-only-text = ⚠️ Please send a text message!
 
 # TikTok Module
 btn-tiktok-account = 📱 TikTok Account

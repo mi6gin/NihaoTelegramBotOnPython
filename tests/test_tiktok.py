@@ -29,7 +29,7 @@ def test_format_user_caption():
     url = "https://vt.tiktok.com/ZSC6gkCG4/"
     caption = format_user_caption(user, url)
     assert "<b>@testuser</b>" in caption
-    assert f'<a href="{url}">&lt;TikTok&gt;</a>' in caption
+    assert f'<a href="{url}">Ссылка на TikTok</a>' in caption
 
 
 @pytest.mark.asyncio

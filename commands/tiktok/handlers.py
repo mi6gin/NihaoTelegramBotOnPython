@@ -47,13 +47,14 @@ def register_post_url(url: str, resolved_url: Optional[str] = None) -> str:
     return short_id
 
 
-def format_user_caption(user: User, url: str) -> str:
+def format_user_caption(user: User, url: str, i18n: Optional[I18nContext] = None) -> str:
     """
     Форматирует обязательную подпись к отправляемому медиафайлу:
-    <b>@username</b> | <a href="...">&lt;TikTok&gt;</a>
+    <b>@username</b> | <a href="...">Ссылка на TikTok</a>
     """
     username = user.username or user.first_name
-    return f"<b>@{username}</b> | <a href=\"{url}\">&lt;TikTok&gt;</a>"
+    link_text = i18n.get("tiktok-caption-link-text") if i18n else "Ссылка на TikTok"
+    return f"<b>@{username}</b> | <a href=\"{url}\">{link_text}</a>"
 
 
 class AnimatedStatus:
@@ -299,7 +300,7 @@ async def process_audio_link_input(message: Message, state: FSMContext, db_user:
     cover_url = info.get("cover")
     cover_file = await TikTokParser.download_thumbnail(cover_url) if cover_url else None
 
-    caption = format_user_caption(db_user, tiktok_url)
+    caption = format_user_caption(db_user, tiktok_url, i18n=i18n)
     try:
         audio_kwargs = {
             "audio": FSInputFile(path=audio_file),
@@ -408,7 +409,7 @@ async def download_all_slides(callback: CallbackQuery, state: FSMContext, db_use
         await state.clear()
         return
 
-    caption = format_user_caption(db_user, tiktok_url)
+    caption = format_user_caption(db_user, tiktok_url, i18n=i18n)
     media_group = [InputMediaPhoto(media=url, caption=caption if i == 0 else None) for i, url in enumerate(images[:10])]
 
     try:
@@ -484,7 +485,7 @@ async def download_selected_slides(callback: CallbackQuery, state: FSMContext, d
         return
 
     await callback.answer()
-    caption = format_user_caption(db_user, tiktok_url)
+    caption = format_user_caption(db_user, tiktok_url, i18n=i18n)
     
     selected_image_urls = [images[i - 1] for i in selected_slides if 0 <= i - 1 < len(images)]
     media_group = [InputMediaPhoto(media=url, caption=caption if idx == 0 else None) for idx, url in enumerate(selected_image_urls[:10])]
@@ -567,7 +568,7 @@ async def auto_download_tiktok_link(message: Message, db_user: User, i18n: I18nC
 
     # 3. Скачиваем данные и информацию о посте
     info = await TikTokParser.get_post_info(tiktok_url)
-    caption = format_user_caption(db_user, tiktok_url)
+    caption = format_user_caption(db_user, tiktok_url, i18n=i18n)
 
     resolved_url = info.get("resolved_url") or tiktok_url
     short_id = register_post_url(tiktok_url, resolved_url=resolved_url)

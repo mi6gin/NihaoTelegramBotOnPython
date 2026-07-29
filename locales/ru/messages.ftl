@@ -305,4 +305,6 @@ tiktok-translation-loading = ⏳ Перевод с помощью Google Transla
 tiktok-translation-failed = ⚠️ Не удалось выполнить перевод.
 tiktok-downloading-status = 📥 <b>Скачиваю</b> <code>{ $link }</code>{ $dots }
 tiktok-uploading-status = 📤 <b>Отправляю</b> <code>{ $link }</code>{ $dots }
+tiktok-caption-link-text = Ссылка на TikTok
+
 

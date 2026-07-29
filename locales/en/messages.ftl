@@ -303,8 +303,8 @@ tiktok-comments-loading = ⏳ Loading comments...
 tiktok-comments-none = 💬 No comments found for this video or comments are disabled by author.
 tiktok-translation-loading = ⏳ Translating via Google Translate...
 tiktok-translation-failed = ⚠️ Failed to perform translation.
-tiktok-downloading-status = 📥 <b>Downloading</b> <code>{ $link }</code>{ $dots }
-tiktok-uploading-status = 📤 <b>Sending</b> <code>{ $link }</code>{ $dots }
+tiktok-downloading-status = 📥 <b>Downloading</b> <a href="{ $link }">TikTok Link</a>{ $dots }
+tiktok-uploading-status = 📤 <b>Sending</b> <a href="{ $link }">TikTok Link</a>{ $dots }
 tiktok-caption-link-text = TikTok Link
 
 

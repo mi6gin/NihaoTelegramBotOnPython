@@ -247,20 +247,43 @@ async def start_favorite_rename(callback: CallbackQuery, state: FSMContext, i18n
 async def process_custom_title_input(message: Message, state: FSMContext, session: AsyncSession, i18n: I18nContext):
     """
     Обрабатывает ввод пользовательского названия для сохраненного видео.
+    Содержит строгую инженерную валидацию длины и предотвращает переполнение СУБД.
     """
     data = await state.get_data()
     fav_id = data.get("editing_fav_id")
-    custom_title = message.text.strip()
+    raw_title = message.text.strip() if message.text else ""
 
-    if fav_id and custom_title:
-        await FavoriteTikTokRepository.update_title(session, fav_id, custom_title)
+    if not raw_title:
+        await message.answer(i18n.get("favorites-rename-empty"))
+        return
+
+    if not fav_id:
         await state.clear()
+        await message.answer("⚠️ Ошибка: сессия переименования истекла.")
+        return
+
+    original_length = len(raw_title)
+    is_truncated = False
+
+    # Инженерная проверка: лимит понятного названия — 100 символов
+    if original_length > 100:
+        custom_title = raw_title[:100]
+        is_truncated = True
+    else:
+        custom_title = raw_title
+
+    await FavoriteTikTokRepository.update_title(session, fav_id, custom_title)
+    await state.clear()
+
+    if is_truncated:
+        await message.answer(i18n.get("favorites-rename-too-long", length=str(original_length)))
+    else:
         await message.answer(i18n.get("favorites-rename-success"))
 
-        fav_count = await FavoriteTikTokRepository.count_user_favorites(session, message.from_user.id)
-        total_pages = math.ceil(fav_count / 5) if fav_count > 0 else 1
-        favorites = await FavoriteTikTokRepository.get_user_favorites(session, message.from_user.id, limit=5, offset=0)
-        text = i18n.get("favorites-tiktok-title", total=str(fav_count))
-        reply_markup = get_favorite_tiktoks_keyboard(favorites, 1, total_pages, i18n)
-        await message.answer(text, reply_markup=reply_markup)
+    fav_count = await FavoriteTikTokRepository.count_user_favorites(session, message.from_user.id)
+    total_pages = math.ceil(fav_count / 5) if fav_count > 0 else 1
+    favorites = await FavoriteTikTokRepository.get_user_favorites(session, message.from_user.id, limit=5, offset=0)
+    text = i18n.get("favorites-tiktok-title", total=str(fav_count))
+    reply_markup = get_favorite_tiktoks_keyboard(favorites, 1, total_pages, i18n)
+    await message.answer(text, reply_markup=reply_markup)
 

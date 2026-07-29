@@ -320,6 +320,9 @@ btn-fav-saved = 💖
 favorites-rename-prompt = ✍️ <b>Enter a custom title for the video:</b>\n\n(Send any text up to 100 characters to easily find the video)
 favorites-rename-success = ✅ Video title successfully updated!
 favorites-rename-btn = ✏️ Rename
+favorites-rename-too-long = ⚠️ The title was too long ({ $length } chars). It was automatically truncated to 100 characters.
+favorites-rename-empty = ⚠️ Title cannot be empty. Please send a text title.
+
 
 
 

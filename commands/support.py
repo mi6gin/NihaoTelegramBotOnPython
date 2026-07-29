@@ -24,7 +24,7 @@ class SupportStates(StatesGroup):
 router = Router(name="user_support")
 
 
-@router.callback_query(F.data == "user_support")
+@router.callback_query(F.data.startswith("user_support"))
 async def start_support_ticket(callback: CallbackQuery, state: FSMContext, i18n: I18nContext):
     """
     Запускает процесс создания тикета поддержки (FSM) с заменой текста сообщения.

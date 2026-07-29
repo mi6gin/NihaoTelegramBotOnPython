@@ -28,7 +28,7 @@ CATALOG_ITEMS = {
 }
 
 
-@router.callback_query(F.data == "user_catalog")
+@router.callback_query(F.data.startswith("user_catalog"))
 async def show_catalog(callback: CallbackQuery, i18n: I18nContext, state: FSMContext):
     """
     Показывает список доступных товаров/тем в каталоге.

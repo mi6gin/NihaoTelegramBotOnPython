@@ -127,7 +127,7 @@ class AnimatedStatus:
 # 📌 ПУНКТ 1: АККАУНТ TIKTOK (Навигация по меню)
 # =====================================================================
 
-@router.callback_query(F.data == "tiktok_account_menu")
+@router.callback_query(F.data.startswith("tiktok_account_menu"))
 async def show_tiktok_account_menu(callback: CallbackQuery, db_user: User, i18n: I18nContext, state: FSMContext):
     """
     Экран 1.1: Главное окно раздела "Аккаунт TikTok" со статистикой профиля.

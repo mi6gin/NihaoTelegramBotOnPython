@@ -152,3 +152,35 @@ async def test_logging_middleware_callback_query(caplog):
         assert res == "response"
         assert any("clicked inline button with callback_data: 'click_button_abc'" in record.message for record in caplog.records)
 
+
+@pytest.mark.asyncio
+async def test_menu_owner_middleware():
+    """Тест MenuOwnerMiddleware: пускает владельца меню и блокирует стороннего пользователя."""
+    from middlewares.menu_owner_mw import MenuOwnerMiddleware
+    from aiogram.types import CallbackQuery
+
+    middleware = MenuOwnerMiddleware()
+    handler = AsyncMock(return_value="allowed")
+
+    # 1. Владелец меню (ID 1000) кликает по своей кнопке
+    callback_owner = MagicMock(spec=CallbackQuery)
+    callback_owner.data = "user_profile:1000"
+    callback_owner.from_user = MagicMock(id=1000)
+    callback_owner.answer = AsyncMock()
+
+    res_owner = await middleware(handler, callback_owner, {})
+    assert res_owner == "allowed"
+    assert handler.call_count == 1
+
+    # 2. Другой пользователь (ID 2000) пытаются кликнуть по чужой кнопке
+    callback_stranger = MagicMock(spec=CallbackQuery)
+    callback_stranger.data = "user_profile:1000"
+    callback_stranger.from_user = MagicMock(id=2000)
+    callback_stranger.answer = AsyncMock()
+
+    res_stranger = await middleware(handler, callback_stranger, {})
+    assert res_stranger is None
+    assert handler.call_count == 1  # Обработчик не вызвался повторно!
+    callback_stranger.answer.assert_called_once()
+
+

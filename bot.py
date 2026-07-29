@@ -124,6 +124,8 @@ async def main():
     dp.update.outer_middleware(DbSessionMiddleware(AsyncSessionLocal))
     dp.update.outer_middleware(BanMiddleware())
     i18n_middleware.setup(dp)
+    from middlewares.menu_owner_mw import MenuOwnerMiddleware
+    dp.callback_query.middleware(MenuOwnerMiddleware())
     dp.message.outer_middleware(ThrottlingMiddleware())
     dp.message.outer_middleware(LoggingMiddleware())
     dp.callback_query.outer_middleware(LoggingMiddleware())

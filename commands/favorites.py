@@ -22,7 +22,7 @@ from utils.logger import logger
 router = Router(name="favorites_router")
 
 
-@router.callback_query(F.data == "user_favorites")
+@router.callback_query(F.data.startswith("user_favorites"))
 async def show_favorites_categories(callback: CallbackQuery, session: AsyncSession, i18n: I18nContext):
     """
     Показывает экран выбора категорий в разделе "Понравившиеся".

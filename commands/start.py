@@ -24,7 +24,7 @@ async def cmd_start(message: Message, db_user: User, i18n: I18nContext):
     is_admin_user = await IsAdmin()(message, db_user)
     await message.answer(
         i18n.get("welcome-text-start", name=db_user.first_name),
-        reply_markup=get_user_menu_keyboard(i18n, is_admin=is_admin_user)
+        reply_markup=get_user_menu_keyboard(i18n, is_admin=is_admin_user, user_id=message.from_user.id)
     )
 
 
@@ -53,7 +53,7 @@ async def cmd_about(message: Message, i18n: I18nContext):
 
 # --- Хендлеры возврата в меню ---
 
-@router.callback_query(F.data == "back_to_menu")
+@router.callback_query(F.data.startswith("back_to_menu"))
 async def process_back_to_menu(callback: CallbackQuery, db_user: User, i18n: I18nContext, state: FSMContext):
     """
     Возврат в главное меню при нажатии inline-кнопки.
@@ -64,5 +64,5 @@ async def process_back_to_menu(callback: CallbackQuery, db_user: User, i18n: I18
     is_admin_user = await IsAdmin()(callback, db_user)
     await callback.message.edit_text(
         i18n.get("menu-title"),
-        reply_markup=get_user_menu_keyboard(i18n, is_admin=is_admin_user)
+        reply_markup=get_user_menu_keyboard(i18n, is_admin=is_admin_user, user_id=callback.from_user.id)
     )

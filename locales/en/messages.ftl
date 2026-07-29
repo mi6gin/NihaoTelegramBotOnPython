@@ -337,6 +337,7 @@ favorites-rename-success = ✅ Video title successfully updated!
 favorites-rename-btn = ✏️ Rename
 favorites-rename-too-long = ⚠️ The title was too long ({ $length } chars). It was automatically truncated to 100 characters.
 favorites-rename-empty = ⚠️ Title cannot be empty. Please send a text title.
+err-not-menu-owner = ⚠️ This menu belongs to another user! Type /start to open your own menu.
 
 
 

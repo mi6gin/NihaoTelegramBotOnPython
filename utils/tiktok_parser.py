@@ -162,6 +162,9 @@ class TikTokParser:
                             if music_url and not music_url.startswith("http"):
                                 music_url = "https://www.tikwm.com" + music_url
 
+                            music_info = data.get("music_info", {})
+                            cover_url = data.get("cover") or data.get("origin_cover") or music_info.get("cover") or data.get("author", {}).get("avatar")
+
                             return {
                                 "type": "photo" if images else "video",
                                 "images": images,
@@ -169,9 +172,32 @@ class TikTokParser:
                                 "music_url": music_url,
                                 "title": data.get("title", ""),
                                 "author": data.get("author", {}).get("nickname", ""),
+                                "music_title": music_info.get("title", ""),
+                                "music_author": music_info.get("author", ""),
+                                "cover": cover_url,
                             }
         except Exception as e:
             logger.warning(f"Tikwm API error for {url}: {e}")
+        return None
+
+    @staticmethod
+    async def download_thumbnail(cover_url: str) -> Optional[str]:
+        """
+        Скачивает обложку поста во временный JPG файл для использования в качестве thumbnail в Telegram.
+        """
+        if not cover_url:
+            return None
+        output_file = os.path.join(TEMP_DIR, f"cover_{int(asyncio.get_event_loop().time() * 1000)}.jpg")
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.get(cover_url, timeout=aiohttp.ClientTimeout(total=10)) as resp:
+                    if resp.status == 200:
+                        content = await resp.read()
+                        with open(output_file, "wb") as f:
+                            f.write(content)
+                        return output_file
+        except Exception as e:
+            logger.warning(f"Error downloading cover thumbnail: {e}")
         return None
 
     @staticmethod
@@ -210,13 +236,24 @@ class TikTokParser:
                 if item_info:
                     images = item_info.get("imagePost", {}).get("images", [])
                     music = item_info.get("music", {}).get("playUrl")
-                    
+                    music_title = item_info.get("music", {}).get("title", "")
+                    music_author = item_info.get("music", {}).get("authorName", "")
+                    author = item_info.get("author", {}).get("nickname", "")
+                    cover = (
+                        item_info.get("music", {}).get("coverLarge") or
+                        item_info.get("video", {}).get("cover", {}).get("urlList", [None])[0]
+                    )
+
                     if images:
                         image_urls = [img.get("imageURL", {}).get("urlList", [None])[0] for img in images if img.get("imageURL", {}).get("urlList")]
                         return {
                             "type": "photo",
                             "resolved_url": resolved_url,
                             "title": item_info.get("desc", "TikTok Slideshow"),
+                            "author": author,
+                            "music_title": music_title,
+                            "music_author": music_author,
+                            "cover": cover,
                             "images": image_urls,
                             "music_url": music,
                         }
@@ -231,6 +268,10 @@ class TikTokParser:
                 "type": tikwm_info["type"],
                 "resolved_url": resolved_url,
                 "title": tikwm_info.get("title", ""),
+                "author": tikwm_info.get("author", ""),
+                "music_title": tikwm_info.get("music_title", ""),
+                "music_author": tikwm_info.get("music_author", ""),
+                "cover": tikwm_info.get("cover"),
                 "images": tikwm_info.get("images", []),
                 "play_url": tikwm_info.get("play_url"),
                 "music_url": tikwm_info.get("music_url"),
@@ -240,8 +281,10 @@ class TikTokParser:
             "type": "video",
             "resolved_url": resolved_url,
             "title": "TikTok Video",
+            "author": "TikTok Author",
             "images": [],
             "music_url": None,
+            "cover": None,
         }
 
     @staticmethod

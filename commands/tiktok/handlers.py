@@ -206,6 +206,7 @@ async def process_audio_link_input(message: Message, state: FSMContext, db_user:
         await message.bot.send_chat_action(chat_id=message.chat.id, action="upload_voice")
     except Exception:
         pass
+    info = await TikTokParser.get_post_info(tiktok_url)
     audio_file = await TikTokParser.download_audio(tiktok_url)
 
     if not audio_file or not os.path.exists(audio_file):
@@ -213,12 +214,29 @@ async def process_audio_link_input(message: Message, state: FSMContext, db_user:
         await state.clear()
         return
 
+    # Заголовок трека (описание видео или наименование музыки)
+    raw_title = info.get("title") or info.get("music_title") or "TikTok Track"
+    track_title = raw_title[:57] + "..." if len(raw_title) > 60 else raw_title
+
+    # Исполнитель (автор поста или музыки)
+    performer = info.get("author") or info.get("music_author") or "TikTok"
+
+    # Скачиваем обложку если доступна
+    cover_url = info.get("cover")
+    cover_file = await TikTokParser.download_thumbnail(cover_url) if cover_url else None
+
     caption = format_user_caption(db_user, tiktok_url)
     try:
-        await message.answer_document(
-            document=FSInputFile(path=audio_file),
-            caption=caption
-        )
+        audio_kwargs = {
+            "audio": FSInputFile(path=audio_file),
+            "caption": caption,
+            "title": track_title,
+            "performer": performer
+        }
+        if cover_file and os.path.exists(cover_file):
+            audio_kwargs["thumbnail"] = FSInputFile(path=cover_file)
+
+        await message.answer_audio(**audio_kwargs)
     except Exception as e:
         logger.error(f"Error sending audio file: {e}")
         await message.answer(i18n.get("tiktok-err-audio-send-failed"))
@@ -226,6 +244,11 @@ async def process_audio_link_input(message: Message, state: FSMContext, db_user:
         if audio_file and os.path.exists(audio_file):
             try:
                 os.remove(audio_file)
+            except Exception:
+                pass
+        if cover_file and os.path.exists(cover_file):
+            try:
+                os.remove(cover_file)
             except Exception:
                 pass
 

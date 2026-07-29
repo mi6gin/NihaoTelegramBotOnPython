@@ -35,6 +35,20 @@ class TikTokParser:
         return match.group(0) if match else None
 
     @staticmethod
+    def extract_video_id(url: str) -> Optional[str]:
+        """
+        Извлекает уникальный числовой ID поста TikTok из канонического URL.
+        Пример: https://www.tiktok.com/@username/video/732918239103847293 -> 732918239103847293
+        """
+        if not url:
+            return None
+        match = re.search(r"/(?:video|photo)/(\d+)", url)
+        if match:
+            return match.group(1)
+        match_digits = re.search(r"(\d{15,22})", url)
+        return match_digits.group(1) if match_digits else None
+
+    @staticmethod
     async def resolve_url(url: str) -> str:
         """
         Раскрывает сокращенные ссылки вида vt.tiktok.com/... до канонического URL tiktok.com/@user/video/...

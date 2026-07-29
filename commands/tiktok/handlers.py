@@ -30,10 +30,18 @@ router = Router(name="tiktok_main")
 _post_urls_cache = {}
 
 
-def register_post_url(url: str) -> str:
+def register_post_url(url: str, resolved_url: Optional[str] = None) -> str:
     """
-    Генерирует короткий ключ для URL поста и сохраняет в кэше.
+    Генерирует ключ для URL поста. Если доступен уникальный ID видео,
+    вшивает его напрямую в ключ (например v732918239103), что позволяет восстановить
+    ссылку даже после полной перезагрузки бота или сервера!
     """
+    vid = TikTokParser.extract_video_id(url) or (TikTokParser.extract_video_id(resolved_url) if resolved_url else None)
+    if vid:
+        key = f"v{vid}"
+        _post_urls_cache[key] = f"https://www.tiktok.com/@a/video/{vid}"
+        return key
+
     short_id = str(abs(hash(url)) % 10000000)
     _post_urls_cache[short_id] = url
     return short_id
@@ -547,7 +555,8 @@ async def auto_download_tiktok_link(message: Message, db_user: User, i18n: I18nC
     info = await TikTokParser.get_post_info(tiktok_url)
     caption = format_user_caption(db_user, tiktok_url)
 
-    short_id = register_post_url(tiktok_url)
+    resolved_url = info.get("resolved_url") or tiktok_url
+    short_id = register_post_url(tiktok_url, resolved_url=resolved_url)
     reply_kb = get_tiktok_comments_button_keyboard(short_id, i18n=i18n)
 
     # 4. Если это фото-слайдшоу
@@ -687,9 +696,20 @@ async def render_comment_card(
 async def start_tiktok_comments_card(callback: CallbackQuery, i18n: Optional[I18nContext] = None):
     """
     Показывает первую карточку комментария при клике на '💬 Комментарии'.
+    Поддерживает динамическое восстановление ссылки по ID даже после перезапуска бота!
     """
     short_id = callback.data.replace("tt_comm_", "")
     url = _post_urls_cache.get(short_id)
+
+    # Если оперативный кэш очистился при рестарте бота — динамически восстанавливаем URL по ID
+    if not url:
+        if short_id.startswith("v") and short_id[1:].isdigit():
+            vid = short_id[1:]
+            url = f"https://www.tiktok.com/@a/video/{vid}"
+            _post_urls_cache[short_id] = url
+        elif short_id.isdigit() and len(short_id) > 10:
+            url = f"https://www.tiktok.com/@a/video/{short_id}"
+            _post_urls_cache[short_id] = url
 
     if not url:
         err_msg = i18n.get("tiktok-comments-link-expired") if i18n else "⚠️ Ссылка на пост устарела или не найдена."

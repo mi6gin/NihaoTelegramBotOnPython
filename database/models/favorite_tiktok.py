@@ -17,4 +17,8 @@ class FavoriteTikTok(Base):
     url: Mapped[str] = mapped_column(String(512))
     title: Mapped[str] = mapped_column(String(256))
     file_id: Mapped[Optional[str]] = mapped_column(String(256), nullable=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now(), default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime,
+        server_default=func.now(),
+        default=func.now(),
+    )

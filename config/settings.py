@@ -1,6 +1,5 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from pydantic import SecretStr, field_validator
-from typing import List
+from pydantic import Field, SecretStr, field_validator
 
 
 class Settings(BaseSettings):
@@ -12,7 +11,7 @@ class Settings(BaseSettings):
     bot_token: SecretStr
     
     # Список Telegram ID администраторов бота
-    admin_ids: List[int] = []
+    admin_ids: list[int] = Field(default_factory=list)
 
     # URL подключения к базе данных (по умолчанию SQLite в директории data)
     db_url: str = "sqlite+aiosqlite:///data/nihao_chan.db"

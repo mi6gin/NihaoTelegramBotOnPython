@@ -46,6 +46,7 @@
 NihaoTelegramBotOnPython/
 │
 ├── bot.py                      # Точка входа: инициализация Bot, Dispatcher, middlewares и роутеров.
+├── application/                # Сборка приложения, команды Telegram и управление жизненным циклом.
 ├── .env.example                # Пример файла переменных окружения.
 ├── requirements.txt            # Зависимости Python.
 ├── alembic.ini                 # Конфигурация миграций Alembic.
@@ -119,4 +120,3 @@ pytest
 
 ## 📜 Лицензия
 Проект распространяется под лицензией MIT.
-

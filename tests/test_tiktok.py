@@ -80,3 +80,31 @@ async def test_show_tiktok_account_menu():
     state.clear.assert_called_once()
     callback.message.edit_text.assert_called_once()
     assert "mytiktok" in callback.message.edit_text.call_args[1]["text"]
+
+
+@pytest.mark.asyncio
+async def test_auto_download_tiktok_link_signature(db_session):
+    """Тест вызова auto_download_tiktok_link с переданной сессией СУБД."""
+    from commands.tiktok.handlers import auto_download_tiktok_link
+    message = MagicMock(spec=Message)
+    message.text = "https://www.tiktok.com/@user/video/732918239103847293"
+    message.chat = MagicMock(id=12345)
+    message.delete = AsyncMock()
+    message.answer = AsyncMock(return_value=MagicMock(message_id=999))
+    message.bot = MagicMock()
+    message.bot.edit_message_text = AsyncMock()
+    message.bot.send_chat_action = AsyncMock()
+    message.answer_video = AsyncMock()
+
+    db_user = User(telegram_id=123, username="testuser", first_name="Test")
+    i18n = MagicMock(spec=I18nContext)
+    i18n.get = MagicMock(side_effect=lambda k, **kw: str(k))
+
+    with patch("utils.tiktok_parser.TikTokParser.get_post_info", new_callable=AsyncMock) as mock_info, \
+         patch("utils.tiktok_parser.TikTokParser.download_video", new_callable=AsyncMock) as mock_down:
+        mock_info.return_value = {"type": "video", "resolved_url": message.text, "title": "Test Title"}
+        mock_down.return_value = None
+
+        await auto_download_tiktok_link(message, db_user, db_session, i18n)
+        message.answer.assert_called()
+

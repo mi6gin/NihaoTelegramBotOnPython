@@ -533,7 +533,7 @@ async def tiktok_cancel(callback: CallbackQuery, state: FSMContext):
 # =====================================================================
 
 @router.message(StateFilter(None), F.text)
-async def auto_download_tiktok_link(message: Message, db_user: User, i18n: I18nContext):
+async def auto_download_tiktok_link(message: Message, db_user: User, session: AsyncSession, i18n: I18nContext):
     """
     Автоматически распознает ссылки на TikTok в тексте сообщения и отправляет видео/слайдшоу.
     Удаляет сообщение пользователя с ссылкой, анимирует «Скачиваю...» -> «Отправляю...»,

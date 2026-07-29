@@ -339,6 +339,18 @@ favorites-rename-too-long = ⚠️ The title was too long ({ $length } chars). I
 favorites-rename-empty = ⚠️ Title cannot be empty. Please send a text title.
 err-not-menu-owner = ⚠️ This menu belongs to another user! Type /start to open your own menu.
 
+# Inline mode
+favorites-inline-empty-title = 📭 No saved videos
+favorites-inline-empty-desc = Click "❤️" under videos in the bot to quickly share them in inline mode!
+favorites-inline-no-match-title = 🔍 Nothing found
+favorites-inline-no-match-desc = No saved videos found for "{ $query }".
+favorites-inline-share-text =
+    🎬 <b>{ $title }</b>
+    
+    👤 Shared by: <b>{ $user }</b>
+    🔗 <a href="{ $link }">TikTok Link</a>
+btn-inline-watch = 🎬 Open in TikTok
+
 
 
 

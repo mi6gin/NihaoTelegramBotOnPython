@@ -6,6 +6,7 @@ from .support import router as support_router
 from .dedinside import router as dedinside_router
 from .tiktok import router as tiktok_router
 from .favorites import router as favorites_router
+from .inline_mode import router as inline_mode_router
 
 # Роутер для пользовательских команд
 router = Router(name="user_commands")
@@ -17,5 +18,6 @@ router.include_routers(
     support_router,
     dedinside_router,
     tiktok_router,
-    favorites_router
+    favorites_router,
+    inline_mode_router
 )

@@ -339,6 +339,18 @@ favorites-rename-too-long = ⚠️ Название слишком длинно�
 favorites-rename-empty = ⚠️ Название не может быть пустым. Пожалуйста, отправьте текстовое название.
 err-not-menu-owner = ⚠️ Это меню выведено для другого пользователя! Напишите /start, чтобы вызвать свое меню.
 
+# Инлайн режим
+favorites-inline-empty-title = 📭 Нет сохраненных видео
+favorites-inline-empty-desc = Нажмите «❤️» под видео в боте, чтобы быстро делиться им в инлайн-режиме!
+favorites-inline-no-match-title = 🔍 Ничего не найдено
+favorites-inline-no-match-desc = По запросу «{ $query }» ничего не найдено в ваших Понравившихся.
+favorites-inline-share-text =
+    🎬 <b>{ $title }</b>
+    
+    👤 Поделился: <b>{ $user }</b>
+    🔗 <a href="{ $link }">Ссылка на TikTok</a>
+btn-inline-watch = 🎬 Открыть в TikTok
+
 
 
 

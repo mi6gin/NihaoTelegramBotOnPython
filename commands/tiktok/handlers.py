@@ -44,8 +44,60 @@ def format_user_caption(user: User, url: str) -> str:
     Форматирует обязательную подпись к отправляемому медиафайлу:
     <b>@username</b> | <a href="...">&lt;TikTok&gt;</a>
     """
-    name_str = f"@{user.username}" if user.username else user.first_name
-    return f"<b>{name_str}</b> | <a href=\"{url}\">&lt;TikTok&gt;</a>"
+    username = user.username or user.first_name
+    return f"<b>@{username}</b> | <a href=\"{url}\">&lt;TikTok&gt;</a>"
+
+
+class AnimatedStatus:
+    """
+    Анимирует многоточие (1-3 точки) в статусном сообщении «Скачиваю [ссылка]...» -> «Отправляю [ссылка]...».
+    """
+    def __init__(self, bot, chat_id: int, message_id: int, base_key: str, link: str, i18n: I18nContext):
+        self.bot = bot
+        self.chat_id = chat_id
+        self.message_id = message_id
+        self.base_key = base_key
+        self.link = link
+        self.i18n = i18n
+        self.task = None
+        self._running = False
+
+    async def _animate(self):
+        dot_count = 1
+        while self._running:
+            try:
+                dots = "." * dot_count
+                text = self.i18n.get(self.base_key, link=self.link, dots=dots)
+                await self.bot.edit_message_text(
+                    chat_id=self.chat_id,
+                    message_id=self.message_id,
+                    text=text,
+                    disable_web_page_preview=True
+                )
+            except Exception:
+                pass
+            dot_count = (dot_count % 3) + 1
+            await asyncio.sleep(0.6)
+
+    def start(self):
+        self._running = True
+        self.task = asyncio.create_task(self._animate())
+
+    def update_key(self, new_key: str):
+        self.base_key = new_key
+
+    async def stop(self):
+        self._running = False
+        if self.task:
+            self.task.cancel()
+            try:
+                await self.task
+            except asyncio.CancelledError:
+                pass
+        try:
+            await self.bot.delete_message(chat_id=self.chat_id, message_id=self.message_id)
+        except Exception:
+            pass
 
 
 # =====================================================================
@@ -461,38 +513,75 @@ async def tiktok_cancel(callback: CallbackQuery, state: FSMContext):
 async def auto_download_tiktok_link(message: Message, db_user: User, i18n: I18nContext):
     """
     Автоматически распознает ссылки на TikTok в тексте сообщения и отправляет видео/слайдшоу.
-    Работает как в личных сообщениях, так и в группах.
+    Удаляет сообщение пользователя с ссылкой, анимирует «Скачиваю...» -> «Отправляю...»,
+    затем отправляет медиа и удаляет статусное сообщение.
     """
     tiktok_url = TikTokParser.extract_url_from_text(message.text)
     if not tiktok_url:
         return
 
     logger.info(f"User {db_user.telegram_id} sent TikTok link: {tiktok_url}")
+
+    # 1. Удаляем исходное сообщение пользователя с ссылкой
     try:
-        await message.bot.send_chat_action(chat_id=message.chat.id, action="upload_video")
+        await message.delete()
     except Exception:
         pass
 
+    # 2. Отправляем статусное сообщение «Скачиваю [ссылка]...» и запускаем анимацию точек
+    status_msg = await message.answer(
+        i18n.get("tiktok-downloading-status", link=tiktok_url, dots="."),
+        disable_web_page_preview=True
+    )
+    anim = AnimatedStatus(
+        bot=message.bot,
+        chat_id=message.chat.id,
+        message_id=status_msg.message_id,
+        base_key="tiktok-downloading-status",
+        link=tiktok_url,
+        i18n=i18n
+    )
+    anim.start()
+
+    # 3. Скачиваем данные и информацию о посте
     info = await TikTokParser.get_post_info(tiktok_url)
     caption = format_user_caption(db_user, tiktok_url)
 
     short_id = register_post_url(tiktok_url)
     reply_kb = get_tiktok_comments_button_keyboard(short_id, i18n=i18n)
 
-    # 1. Если это фото-слайдшоу
+    # 4. Если это фото-слайдшоу
     if info.get("type") == "photo" and info.get("images"):
         images = info["images"]
         media_group = [InputMediaPhoto(media=url, caption=caption if i == 0 else None) for i, url in enumerate(images[:10])]
+        
+        # Меняем статус на «Отправляю [ссылка]...» и запускаем анимацию отправки бота
+        anim.update_key("tiktok-uploading-status")
+        try:
+            await message.bot.send_chat_action(chat_id=message.chat.id, action="upload_photo")
+        except Exception:
+            pass
+
         try:
             await message.answer_media_group(media=media_group)
             await message.answer(i18n.get("btn-tiktok-comments"), reply_markup=reply_kb)
         except Exception as e:
             logger.error(f"Auto-download photo error: {e}")
             await message.answer(i18n.get("tiktok-auto-photo-error", error=str(e)))
+        finally:
+            await anim.stop()
         return
 
-    # 2. Если это обычное видео
+    # 5. Если это обычное видео
     video_file = await TikTokParser.download_video(tiktok_url)
+
+    # Меняем статус на «Отправляю [ссылка]...» и запускаем анимацию отправки бота
+    anim.update_key("tiktok-uploading-status")
+    try:
+        await message.bot.send_chat_action(chat_id=message.chat.id, action="upload_video")
+    except Exception:
+        pass
+
     if video_file and os.path.exists(video_file):
         try:
             video_input = FSInputFile(path=video_file)
@@ -501,12 +590,14 @@ async def auto_download_tiktok_link(message: Message, db_user: User, i18n: I18nC
             logger.error(f"Auto-download video error: {e}")
             await message.answer(i18n.get("tiktok-auto-video-error", error=str(e)))
         finally:
+            await anim.stop()
             if video_file and os.path.exists(video_file):
                 try:
                     os.remove(video_file)
                 except Exception:
                     pass
     else:
+        await anim.stop()
         await message.answer(i18n.get("tiktok-auto-video-failed"))
 
 

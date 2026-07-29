@@ -303,4 +303,6 @@ tiktok-comments-loading = ⏳ Загрузка комментариев...
 tiktok-comments-none = 💬 К этому видео не найдено комментариев или они закрыты автором.
 tiktok-translation-loading = ⏳ Перевод с помощью Google Translate...
 tiktok-translation-failed = ⚠️ Не удалось выполнить перевод.
+tiktok-downloading-status = 📥 <b>Скачиваю</b> <code>{ $link }</code>{ $dots }
+tiktok-uploading-status = 📤 <b>Отправляю</b> <code>{ $link }</code>{ $dots }
 

@@ -53,7 +53,7 @@ def get_dedinside_stop_keyboard(i18n: I18nContext) -> InlineKeyboardMarkup:
     return builder.as_markup()
 
 
-@router.message(Command("dedinside"), IsPrivate(), StateFilter("*"))
+@router.message(Command("dedinside"), StateFilter("*"))
 async def cmd_dedinside(message: Message, state: FSMContext, i18n: I18nContext):
     """
     Запуск команды /dedinside.
@@ -76,7 +76,7 @@ async def cmd_dedinside(message: Message, state: FSMContext, i18n: I18nContext):
     await state.update_data(menu_msg_id=menu_msg.message_id)
 
 
-@router.callback_query(F.data == "dedinside_cancel", IsPrivate(), StateFilter("*"))
+@router.callback_query(F.data == "dedinside_cancel", StateFilter("*"))
 async def process_dedinside_cancel(callback: CallbackQuery, state: FSMContext):
     """
     Обработчик отмены команды /dedinside.
@@ -103,7 +103,7 @@ async def process_dedinside_cancel(callback: CallbackQuery, state: FSMContext):
     await state.clear()
 
 
-@router.callback_query(F.data == "dedinside_stop", DedinsideStates.sending_spam, IsPrivate())
+@router.callback_query(F.data == "dedinside_stop", DedinsideStates.sending_spam)
 async def process_dedinside_stop(callback: CallbackQuery, state: FSMContext, i18n: I18nContext):
     """
     Обработчик экстренной остановки рассылки.
@@ -112,7 +112,7 @@ async def process_dedinside_stop(callback: CallbackQuery, state: FSMContext, i18
     await state.update_data(stopped=True)
 
 
-@router.callback_query(F.data.in_({"dedinside_count_5", "dedinside_count_10"}), DedinsideStates.selecting_count, IsPrivate())
+@router.callback_query(F.data.in_({"dedinside_count_5", "dedinside_count_10"}), DedinsideStates.selecting_count)
 async def process_count_selection(callback: CallbackQuery, state: FSMContext, i18n: I18nContext):
     """
     Обработка клика по кнопкам "5 раз" или "10 раз".
@@ -132,7 +132,7 @@ async def process_count_selection(callback: CallbackQuery, state: FSMContext, i1
     await state.update_data(count=count, prompt_msg_id=prompt_msg.message_id)
 
 
-@router.message(DedinsideStates.waiting_for_message, IsPrivate(), ~F.text)
+@router.message(DedinsideStates.waiting_for_message, ~F.text)
 async def process_non_text_message(message: Message, i18n: I18nContext):
     """
     Обработка отправки не-текстового сообщения (фото, стикер, файл, голос и т.д.).
@@ -141,7 +141,7 @@ async def process_non_text_message(message: Message, i18n: I18nContext):
     await message.answer(i18n.get("dedinside-warn-only-text"))
 
 
-@router.message(DedinsideStates.waiting_for_message, IsPrivate(), F.text)
+@router.message(DedinsideStates.waiting_for_message, F.text)
 async def process_spam_text_message(message: Message, state: FSMContext, i18n: I18nContext):
     """
     Обработка текста для рассылки.

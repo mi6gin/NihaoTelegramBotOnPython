@@ -52,7 +52,7 @@ def format_user_caption(user: User, url: str) -> str:
 # 📌 ПУНКТ 1: АККАУНТ TIKTOK (Навигация по меню)
 # =====================================================================
 
-@router.callback_query(F.data == "tiktok_account_menu", IsPrivate())
+@router.callback_query(F.data == "tiktok_account_menu")
 async def show_tiktok_account_menu(callback: CallbackQuery, db_user: User, i18n: I18nContext, state: FSMContext):
     """
     Экран 1.1: Главное окно раздела "Аккаунт TikTok" со статистикой профиля.
@@ -88,7 +88,7 @@ async def show_tiktok_account_menu(callback: CallbackQuery, db_user: User, i18n:
     )
 
 
-@router.callback_query(F.data == "tiktok_bind_username", IsPrivate())
+@router.callback_query(F.data == "tiktok_bind_username")
 async def start_bind_username(callback: CallbackQuery, state: FSMContext, i18n: I18nContext):
     """
     Экран 1.2: Запрос ввода юзернейма TikTok.
@@ -103,7 +103,7 @@ async def start_bind_username(callback: CallbackQuery, state: FSMContext, i18n: 
     await state.update_data(prompt_msg_id=prompt_msg.message_id)
 
 
-@router.message(TikTokStates.waiting_for_username, IsPrivate(), F.text)
+@router.message(TikTokStates.waiting_for_username, F.text)
 async def process_username_input(message: Message, state: FSMContext, session: AsyncSession, db_user: User, i18n: I18nContext):
     """
     Обработка введенного юзернейма TikTok и сохранение в БД.
@@ -138,7 +138,7 @@ async def process_username_input(message: Message, state: FSMContext, session: A
     )
 
 
-@router.callback_query(F.data == "tiktok_unbind_confirm", IsPrivate())
+@router.callback_query(F.data == "tiktok_unbind_confirm")
 async def tiktok_unbind_confirm(callback: CallbackQuery, db_user: User, i18n: I18nContext):
     """
     Экран 1.3: Подтверждение отвязки аккаунта.
@@ -150,7 +150,7 @@ async def tiktok_unbind_confirm(callback: CallbackQuery, db_user: User, i18n: I1
     )
 
 
-@router.callback_query(F.data == "tiktok_unbind_yes", IsPrivate())
+@router.callback_query(F.data == "tiktok_unbind_yes")
 async def tiktok_unbind_yes(callback: CallbackQuery, session: AsyncSession, db_user: User, i18n: I18nContext):
     """
     Отвязывает аккаунт в СУБД и возвращает в меню.
@@ -169,7 +169,7 @@ async def tiktok_unbind_yes(callback: CallbackQuery, session: AsyncSession, db_u
 # 📌 ПУНКТ 3: МИКРО-МЕНЮ /Mtiktok (Только звук MP3)
 # =====================================================================
 
-@router.message(Command("mtiktok", "Mtiktok", ignore_case=True), IsPrivate())
+@router.message(Command("mtiktok", "Mtiktok", ignore_case=True))
 async def cmd_mtiktok(message: Message, state: FSMContext, i18n: I18nContext):
     """
     Старт микро-меню /mtiktok (Скачивание только аудио).
@@ -184,7 +184,7 @@ async def cmd_mtiktok(message: Message, state: FSMContext, i18n: I18nContext):
     await state.update_data(prompt_msg_id=prompt_msg.message_id)
 
 
-@router.message(TikTokStates.waiting_for_audio_link, IsPrivate(), F.text)
+@router.message(TikTokStates.waiting_for_audio_link, F.text)
 async def process_audio_link_input(message: Message, state: FSMContext, db_user: User, i18n: I18nContext):
     """
     Обработка ссылки для получения аудио MP3.
@@ -259,7 +259,7 @@ async def process_audio_link_input(message: Message, state: FSMContext, db_user:
 # 📌 ПУНКТ 4: МИКРО-МЕНЮ /Ptiktok (Слайдшоу / Карусели картинок)
 # =====================================================================
 
-@router.message(Command("ptiktok", "Ptiktok", ignore_case=True), IsPrivate())
+@router.message(Command("ptiktok", "Ptiktok", ignore_case=True))
 async def cmd_ptiktok(message: Message, state: FSMContext, i18n: I18nContext):
     """
     Старт микро-меню /Ptiktok (Скачивание слайдшоу).
@@ -274,7 +274,7 @@ async def cmd_ptiktok(message: Message, state: FSMContext, i18n: I18nContext):
     await state.update_data(prompt_msg_id=prompt_msg.message_id)
 
 
-@router.message(TikTokStates.waiting_for_photo_link, IsPrivate(), F.text)
+@router.message(TikTokStates.waiting_for_photo_link, F.text)
 async def process_photo_link_input(message: Message, state: FSMContext, i18n: I18nContext):
     """
     Обработка ссылки на слайдшоу и переход в окно выбора режима (Экран 4.2).
@@ -319,7 +319,7 @@ async def process_photo_link_input(message: Message, state: FSMContext, i18n: I1
     )
 
 
-@router.callback_query(F.data == "tiktok_photo_all", IsPrivate())
+@router.callback_query(F.data == "tiktok_photo_all")
 async def download_all_slides(callback: CallbackQuery, state: FSMContext, db_user: User, i18n: I18nContext):
     """
     Скачивание всех картинок из слайдшоу альбомом.
@@ -346,7 +346,7 @@ async def download_all_slides(callback: CallbackQuery, state: FSMContext, db_use
     await state.clear()
 
 
-@router.callback_query(F.data == "tiktok_photo_select_mode", IsPrivate())
+@router.callback_query(F.data == "tiktok_photo_select_mode")
 async def enter_slides_selection_mode(callback: CallbackQuery, state: FSMContext, i18n: I18nContext):
     """
     Переход в интерактивную сетку выбора конкретных слайдов (Экран 4.3).
@@ -367,7 +367,7 @@ async def enter_slides_selection_mode(callback: CallbackQuery, state: FSMContext
     )
 
 
-@router.callback_query(F.data.startswith("tiktok_toggle_slide_"), TikTokStates.selecting_slides, IsPrivate())
+@router.callback_query(F.data.startswith("tiktok_toggle_slide_"), TikTokStates.selecting_slides)
 async def toggle_slide_selection(callback: CallbackQuery, state: FSMContext, i18n: I18nContext):
     """
     Переключает галочку на выбранном номере слайда.
@@ -395,7 +395,7 @@ async def toggle_slide_selection(callback: CallbackQuery, state: FSMContext, i18
     )
 
 
-@router.callback_query(F.data == "tiktok_download_selected", TikTokStates.selecting_slides, IsPrivate())
+@router.callback_query(F.data == "tiktok_download_selected", TikTokStates.selecting_slides)
 async def download_selected_slides(callback: CallbackQuery, state: FSMContext, db_user: User, i18n: I18nContext):
     """
     Скачивание только отфильтрованных слайдов с проверкой на пустой выбор.
@@ -424,7 +424,7 @@ async def download_selected_slides(callback: CallbackQuery, state: FSMContext, d
     await state.clear()
 
 
-@router.callback_query(F.data == "tiktok_photo_back_mode", TikTokStates.selecting_slides, IsPrivate())
+@router.callback_query(F.data == "tiktok_photo_back_mode", TikTokStates.selecting_slides)
 async def back_to_photo_mode(callback: CallbackQuery, state: FSMContext, i18n: I18nContext):
     """
     Возврат из сетки слайдов на выбор режима (Экран 4.2).
@@ -440,7 +440,7 @@ async def back_to_photo_mode(callback: CallbackQuery, state: FSMContext, i18n: I
     )
 
 
-@router.callback_query(F.data == "tiktok_cancel", IsPrivate(), StateFilter("*"))
+@router.callback_query(F.data == "tiktok_cancel", StateFilter("*"))
 async def tiktok_cancel(callback: CallbackQuery, state: FSMContext):
     """
     Универсальная кнопка Отмена в модуле TikTok.

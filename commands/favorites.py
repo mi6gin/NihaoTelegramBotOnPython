@@ -2,8 +2,9 @@ import math
 import os
 from typing import Optional
 from aiogram import Router, F
-from aiogram.types import CallbackQuery, FSInputFile, InputMediaPhoto
+from aiogram.types import CallbackQuery, Message, FSInputFile, InputMediaPhoto
 from aiogram.fsm.context import FSMContext
+from aiogram.fsm.state import State, StatesGroup
 from aiogram_i18n import I18nContext
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -217,3 +218,49 @@ async def play_favorite_tiktok(callback: CallbackQuery, session: AsyncSession, d
     else:
         await anim.stop()
         await callback.message.answer(i18n.get("tiktok-auto-video-error", error="Failed to download file"))
+
+
+class FavoriteStates(StatesGroup):
+    waiting_for_custom_title = State()
+
+
+@router.callback_query(F.data.startswith("fav_tt_rename_"))
+async def start_favorite_rename(callback: CallbackQuery, state: FSMContext, i18n: I18nContext):
+    """
+    Инициирует процесс переименования ролика в Понравившихся.
+    """
+    try:
+        fav_id = int(callback.data.replace("fav_tt_rename_", ""))
+    except ValueError:
+        await callback.answer("⚠️ Ошибка ID видео.", show_alert=True)
+        return
+
+    await state.update_data(editing_fav_id=fav_id)
+    await state.set_state(FavoriteStates.waiting_for_custom_title)
+
+    text = i18n.get("favorites-rename-prompt")
+    await callback.message.answer(text)
+    await callback.answer()
+
+
+@router.message(FavoriteStates.waiting_for_custom_title, F.text)
+async def process_custom_title_input(message: Message, state: FSMContext, session: AsyncSession, i18n: I18nContext):
+    """
+    Обрабатывает ввод пользовательского названия для сохраненного видео.
+    """
+    data = await state.get_data()
+    fav_id = data.get("editing_fav_id")
+    custom_title = message.text.strip()
+
+    if fav_id and custom_title:
+        await FavoriteTikTokRepository.update_title(session, fav_id, custom_title)
+        await state.clear()
+        await message.answer(i18n.get("favorites-rename-success"))
+
+        fav_count = await FavoriteTikTokRepository.count_user_favorites(session, message.from_user.id)
+        total_pages = math.ceil(fav_count / 5) if fav_count > 0 else 1
+        favorites = await FavoriteTikTokRepository.get_user_favorites(session, message.from_user.id, limit=5, offset=0)
+        text = i18n.get("favorites-tiktok-title", total=str(fav_count))
+        reply_markup = get_favorite_tiktoks_keyboard(favorites, 1, total_pages, i18n)
+        await message.answer(text, reply_markup=reply_markup)
+

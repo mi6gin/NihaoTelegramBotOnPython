@@ -317,6 +317,10 @@ favorites-added-alert = ❤️ Video added to Favorites!
 favorites-removed-alert = 💔 Video removed from Favorites.
 btn-fav-save = ❤️
 btn-fav-saved = 💖
+favorites-rename-prompt = ✍️ <b>Enter a custom title for the video:</b>\n\n(Send any text up to 100 characters to easily find the video)
+favorites-rename-success = ✅ Video title successfully updated!
+favorites-rename-btn = ✏️ Rename
+
 
 
 

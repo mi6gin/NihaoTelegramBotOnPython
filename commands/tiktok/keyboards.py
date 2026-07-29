@@ -132,12 +132,14 @@ def get_favorite_tiktoks_keyboard(
     for fav in favorites:
         # Обрезаем название если слишком длинное
         title = fav.title.strip()
-        if not title:
-            title = "TikTok Video"
-        display_title = title[:45] + "..." if len(title) > 48 else title
+        if not title or title.lower() in ("tiktok video", "tiktok slideshow"):
+            title = f"Без названия (#{fav.id})"
+        display_title = title[:35] + "..." if len(title) > 38 else title
         builder.button(text=f"🎥 {display_title}", callback_data=f"fav_tt_play_{fav.id}")
+        builder.button(text="✏️", callback_data=f"fav_tt_rename_{fav.id}")
 
-    builder.adjust(1)
+    # По 2 кнопки в ряду (видео + карандаш)
+    builder.adjust(*([2] * len(favorites)))
 
     # Пагинация
     if total_pages > 1:

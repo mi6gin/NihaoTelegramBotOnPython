@@ -86,3 +86,17 @@ class FavoriteTikTokRepository:
         query = select(FavoriteTikTok).where(FavoriteTikTok.id == fav_id)
         result = await session.execute(query)
         return result.scalar_one_or_none()
+
+    @staticmethod
+    async def update_title(session: AsyncSession, fav_id: int, title: str) -> bool:
+        """
+        Обновляет пользовательское название сохраненного видео.
+        """
+        query = select(FavoriteTikTok).where(FavoriteTikTok.id == fav_id)
+        result = await session.execute(query)
+        fav = result.scalar_one_or_none()
+        if fav:
+            fav.title = title[:250] if title else "TikTok Video"
+            await session.commit()
+            return True
+        return False

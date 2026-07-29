@@ -317,6 +317,10 @@ favorites-added-alert = ❤️ Видео добавлено в Понравив
 favorites-removed-alert = 💔 Видео удалено из Понравившихся.
 btn-fav-save = ❤️
 btn-fav-saved = 💖
+favorites-rename-prompt = ✍️ <b>Введите ваше название для видео:</b>\n\n(Отправьте любой текст до 100 символов, чтобы легко находить ролик)
+favorites-rename-success = ✅ Название видео успешно обновлено!
+favorites-rename-btn = ✏️ Переименовать
+
 
 
 

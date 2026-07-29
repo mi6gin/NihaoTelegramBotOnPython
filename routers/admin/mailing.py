@@ -6,7 +6,8 @@ from aiogram.types import Message, CallbackQuery
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import StatesGroup, State
 from aiogram.utils.keyboard import InlineKeyboardBuilder
-from database.repository.user_repo import UserRepository
+from application.services.mailing import MailingService
+from database.repository.mailing_repo import MailingRepository
 from keyboards.inline.admin_panel import get_admin_panel_keyboard
 from keyboards.inline.cancel import get_cancel_inline_keyboard
 from filters.is_private import IsPrivate
@@ -14,10 +15,9 @@ from filters.is_admin import IsAdmin
 from sqlalchemy.ext.asyncio import AsyncSession
 from aiogram_i18n import I18nContext
 from utils.logger import logger
-from database.models.user import User
-from sqlalchemy import select
 
 router = Router(name="admin_mailing")
+mailing_service = MailingService(MailingRepository())
 
 
 class AdminMailingStates(StatesGroup):
@@ -45,22 +45,7 @@ async def get_cached_users(session: AsyncSession) -> list:
     if USERS_CACHE["users"] and (now - USERS_CACHE["timestamp"] < CACHE_TTL):
         return USERS_CACHE["users"]
         
-    # Запрашиваем только необходимые поля, минуя тяжелые ORM-объекты
-    query = (
-        select(User.telegram_id, User.first_name, User.username)
-        .where(User.telegram_id > 0)
-        .order_by(User.registered_at.desc())
-    )
-    result = await session.execute(query)
-    rows = result.all()
-    
-    users = []
-    for row in rows:
-        users.append({
-            "telegram_id": row[0],
-            "first_name": row[1],
-            "username": row[2]
-        })
+    users = await mailing_service.get_user_summaries(session)
         
     USERS_CACHE["users"] = users
     USERS_CACHE["timestamp"] = now
@@ -371,23 +356,11 @@ async def process_mailing_content(
         except Exception:
             pass
 
-    # 1. Загружаем отфильтрованную аудиторию
-    if target_filter == "all":
-        query = select(User).where(User.telegram_id > 0)
-    elif target_filter == "lang_ru":
-        query = select(User).where(User.telegram_id > 0, User.language == "ru")
-    elif target_filter == "lang_en":
-        query = select(User).where(User.telegram_id > 0, User.language == "en")
-    elif target_filter.startswith("theme_"):
-        theme_id = target_filter.replace("theme_", "")
-        query = select(User).where(User.telegram_id > 0, User.selected_theme == theme_id)
-    elif target_filter == "list":
-        query = select(User).where(User.telegram_id.in_(selected_ids))
-    else:
-        query = select(User).where(User.telegram_id > 0)
-
-    result = await session.execute(query)
-    users = list(result.scalars().all())
+    users = await mailing_service.get_recipients(
+        session,
+        target_filter,
+        selected_ids,
+    )
     
     if not users:
         await message.answer(i18n.get("err-no-users"))

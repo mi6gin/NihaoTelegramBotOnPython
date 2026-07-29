@@ -11,7 +11,7 @@ from aiogram.types import (
 from aiogram_i18n import I18nContext
 from sqlalchemy.ext.asyncio import AsyncSession
 from database.repository.favorite_repo import FavoriteTikTokRepository
-from utils.tiktok_parser import TikTokParser
+from infrastructure.tiktok import TikTokParser
 
 router = Router(name="inline_mode_router")
 

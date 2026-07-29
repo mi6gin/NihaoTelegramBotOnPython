@@ -6,6 +6,7 @@ from aiogram_i18n import I18nContext
 from filters.is_private import IsPrivate
 from sqlalchemy.ext.asyncio import AsyncSession
 from database.models.user import User
+from database.repository.user_repo import UserRepository
 
 router = Router(name="user_catalog")
 
@@ -103,7 +104,6 @@ async def select_catalog_item(
         await callback.answer(i18n.get("err-item-not-found"), show_alert=True)
         return
         
-    from database.repository.user_repo import UserRepository
     await UserRepository.set_selected_theme(session, db_user.telegram_id, item_id)
     
     title = i18n.get(item_data["title_key"])

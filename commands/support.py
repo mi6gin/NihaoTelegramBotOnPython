@@ -2,11 +2,15 @@ from aiogram import Router, F
 from aiogram.types import Message, CallbackQuery
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import StatesGroup, State
+from aiogram.utils.keyboard import InlineKeyboardBuilder
 from aiogram_i18n import I18nContext
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from application.services.support import SupportService
 from database.models.user import User
 from database.repository.ticket_repo import TicketRepository
+from database.repository.user_repo import UserRepository
+from domain.support import InvalidTicketMessage
 from keyboards.inline.cancel import get_cancel_inline_keyboard
 from keyboards.inline.user_menu import get_user_menu_keyboard
 from filters.is_private import IsPrivate
@@ -22,6 +26,7 @@ class SupportStates(StatesGroup):
 
 
 router = Router(name="user_support")
+support_service = SupportService(TicketRepository(), UserRepository())
 
 
 @router.callback_query(F.data.startswith("user_support"))
@@ -67,8 +72,14 @@ async def process_ticket_message(
     """
     Обрабатывает ввод сообщения для поддержки. Создает тикет в БД.
     """
-    ticket_text = message.text.strip()
-    if len(ticket_text) < 10 or len(ticket_text) > 1000:
+    try:
+        ticket_text = message.text.strip()
+        ticket, admins = await support_service.create_ticket(
+            session,
+            db_user.telegram_id,
+            ticket_text,
+        )
+    except InvalidTicketMessage:
         await message.answer(i18n.get("err-ticket-length"))
         return
 
@@ -80,15 +91,9 @@ async def process_ticket_message(
         except Exception:
             pass
 
-    ticket = await TicketRepository.create(session, db_user.telegram_id, ticket_text)
-    
     await state.clear()
     logger.info(f"User {db_user.telegram_id} created support ticket #{ticket.id}")
-    
-    from database.repository.user_repo import UserRepository
-    from aiogram.utils.keyboard import InlineKeyboardBuilder
-    
-    admins = await UserRepository.get_admins(session)
+
     for admin in admins:
         try:
             admin_locale = admin.language or "ru"

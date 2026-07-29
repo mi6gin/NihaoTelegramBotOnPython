@@ -47,6 +47,9 @@ NihaoTelegramBotOnPython/
 │
 ├── bot.py                      # Точка входа: инициализация Bot, Dispatcher, middlewares и роутеров.
 ├── application/                # Сборка приложения, команды Telegram и управление жизненным циклом.
+├── domain/                     # Бизнес-правила и модели без зависимостей от фреймворков.
+├── infrastructure/             # Адаптеры внешних сервисов (TikTok, HTTP, yt-dlp).
+├── presentation/               # Общие компоненты Telegram-представления.
 ├── .env.example                # Пример файла переменных окружения.
 ├── requirements.txt            # Зависимости Python.
 ├── alembic.ini                 # Конфигурация миграций Alembic.
@@ -66,6 +69,9 @@ NihaoTelegramBotOnPython/
 ├── utils/                      # Логирование, TikTokParser, DynamicTextManager и валидаторы.
 └── tests/                      # Набор автоматических тестов (pytest).
 ```
+
+Подробные границы слоёв и правила зависимостей описаны в
+[`ARCHITECTURE.md`](ARCHITECTURE.md).
 
 ---
 

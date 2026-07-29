@@ -10,13 +10,19 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from database.models.user import User as DBUser
 from database.repository.favorite_repo import FavoriteTikTokRepository
-from commands.tiktok.handlers import _post_urls_cache, register_post_url, format_user_caption, AnimatedStatus
+from commands.tiktok.handlers import (
+    _post_urls_cache,
+    format_user_caption,
+    register_post_url,
+    tiktok_service,
+)
 from commands.tiktok.keyboards import (
     get_favorite_categories_keyboard,
     get_favorite_tiktoks_keyboard,
     get_tiktok_comments_button_keyboard,
 )
-from utils.tiktok_parser import TikTokParser
+from infrastructure.tiktok import TikTokParser
+from presentation.telegram.animated_status import AnimatedStatus
 from utils.logger import logger
 
 router = Router(name="favorites_router")
@@ -91,16 +97,7 @@ async def toggle_favorite_video(callback: CallbackQuery, session: AsyncSession, 
     Переключает лайк / сохранение видео в Понравившиеся при клике по кнопке под видео.
     """
     short_id = callback.data.replace("fav_toggle_", "")
-    url = _post_urls_cache.get(short_id)
-
-    if not url:
-        if short_id.startswith("v") and short_id[1:].isdigit():
-            vid = short_id[1:]
-            url = f"https://www.tiktok.com/@a/video/{vid}"
-            _post_urls_cache[short_id] = url
-        elif short_id.isdigit() and len(short_id) > 10:
-            url = f"https://www.tiktok.com/@a/video/{short_id}"
-            _post_urls_cache[short_id] = url
+    url = tiktok_service.resolve_post_url(short_id)
 
     if not url:
         await callback.answer("⚠️ Ссылка на видео не найдена.", show_alert=True)
@@ -166,16 +163,16 @@ async def play_favorite_tiktok(callback: CallbackQuery, session: AsyncSession, d
     anim.start()
 
     # 2. Скачиваем данные и информацию о посте
-    info = await TikTokParser.get_post_info(tiktok_url)
+    post = await tiktok_service.get_post(tiktok_url)
     caption = format_user_caption(db_user, tiktok_url, i18n=i18n)
 
-    resolved_url = info.get("resolved_url") or tiktok_url
+    resolved_url = post.resolved_url
     short_id = register_post_url(tiktok_url, resolved_url=resolved_url)
     reply_kb = get_tiktok_comments_button_keyboard(short_id, is_favorite=True, i18n=i18n)
 
     # 3. Если это фото-слайдшоу
-    if info.get("type") == "photo" and info.get("images"):
-        images = info["images"]
+    if post.is_slideshow:
+        images = post.images
         media_group = [InputMediaPhoto(media=u, caption=caption if i == 0 else None) for i, u in enumerate(images[:10])]
 
         await anim.set_key("tiktok-uploading-status")
@@ -290,4 +287,3 @@ async def process_custom_title_input(message: Message, state: FSMContext, sessio
     text = i18n.get("favorites-tiktok-title", total=str(fav_count))
     reply_markup = get_favorite_tiktoks_keyboard(favorites, 1, total_pages, i18n)
     await message.answer(text, reply_markup=reply_markup)
-

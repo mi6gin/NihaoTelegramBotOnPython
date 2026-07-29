@@ -36,7 +36,7 @@ def format_profile_text(user: User, i18n: I18nContext) -> str:
     )
 
 
-@router.callback_query(F.data == "user_profile", IsPrivate())
+@router.callback_query(F.data == "user_profile")
 async def show_profile(callback: CallbackQuery, db_user: User, i18n: I18nContext, state: FSMContext):
     """
     Показывает карточку профиля пользователя.
@@ -50,7 +50,7 @@ async def show_profile(callback: CallbackQuery, db_user: User, i18n: I18nContext
     )
 
 
-@router.callback_query(F.data == "change_language", IsPrivate())
+@router.callback_query(F.data == "change_language")
 async def show_language_selection(callback: CallbackQuery, i18n: I18nContext, state: FSMContext):
     """
     Показывает меню выбора языка.
@@ -64,7 +64,7 @@ async def show_language_selection(callback: CallbackQuery, i18n: I18nContext, st
     )
 
 
-@router.callback_query(F.data.startswith("set_lang_"), IsPrivate())
+@router.callback_query(F.data.startswith("set_lang_"))
 async def set_language(callback: CallbackQuery, db_user: User, i18n: I18nContext, state: FSMContext):
     """
     Сохраняет выбранный пользователем язык и возвращает в профиль.

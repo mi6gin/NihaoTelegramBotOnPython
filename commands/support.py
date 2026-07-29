@@ -24,7 +24,7 @@ class SupportStates(StatesGroup):
 router = Router(name="user_support")
 
 
-@router.callback_query(F.data == "user_support", IsPrivate())
+@router.callback_query(F.data == "user_support")
 async def start_support_ticket(callback: CallbackQuery, state: FSMContext, i18n: I18nContext):
     """
     Запускает процесс создания тикета поддержки (FSM) с заменой текста сообщения.
@@ -40,7 +40,7 @@ async def start_support_ticket(callback: CallbackQuery, state: FSMContext, i18n:
     await state.update_data(prompt_msg_id=prompt_msg.message_id)
 
 
-@router.callback_query(F.data == "cancel_support", IsPrivate())
+@router.callback_query(F.data == "cancel_support")
 async def process_cancel_support(callback: CallbackQuery, state: FSMContext, db_user: User, i18n: I18nContext):
     """
     Обработчик клика по инлайн-кнопке отмены при создании тикета.

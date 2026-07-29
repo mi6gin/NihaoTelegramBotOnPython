@@ -28,7 +28,7 @@ CATALOG_ITEMS = {
 }
 
 
-@router.callback_query(F.data == "user_catalog", IsPrivate())
+@router.callback_query(F.data == "user_catalog")
 async def show_catalog(callback: CallbackQuery, i18n: I18nContext, state: FSMContext):
     """
     Показывает список доступных товаров/тем в каталоге.
@@ -50,7 +50,7 @@ async def show_catalog(callback: CallbackQuery, i18n: I18nContext, state: FSMCon
     )
 
 
-@router.callback_query(F.data.startswith("catalog_view_"), IsPrivate())
+@router.callback_query(F.data.startswith("catalog_view_"))
 async def show_catalog_item(callback: CallbackQuery, i18n: I18nContext):
     """
     Показывает карточку конкретного товара/темы с детальным описанием.
@@ -86,7 +86,7 @@ async def show_catalog_item(callback: CallbackQuery, i18n: I18nContext):
     )
 
 
-@router.callback_query(F.data.startswith("catalog_select_"), IsPrivate())
+@router.callback_query(F.data.startswith("catalog_select_"))
 async def select_catalog_item(
     callback: CallbackQuery, 
     session: AsyncSession, 

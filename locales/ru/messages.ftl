@@ -289,10 +289,16 @@ tiktok-ptiktok-prompt-msg =
 
     Отправьте ссылку на фото-карусель (слайдшоу) TikTok.
 tiktok-err-no-slideshow = ❌ По этой ссылке не найдено карусели картинок/слайдшоу.
-tiktok-slideshow-found-msg = 📸 <b>Найдено слайдшоу! Всего слайдов: { $total }</b>\n\nВыберите, как вы хотите скачать картинки:
+tiktok-slideshow-found-msg =
+    📸 <b>Найдено слайдшоу! Всего слайдов: { $total }</b>
+    
+    Выберите, как вы хотите скачать картинки:
 tiktok-err-slideshow-data = ❌ Ошибка данных слайдшоу.
 tiktok-err-send-slides = ❌ Ошибка при отправке слайдов.
-tiktok-select-slides-prompt = 🔢 <b>Нажимайте на кнопки с номерами слайдов, чтобы отметить нужные:</b>\n\nОтмечено для скачивания: [ { $selected } ]
+tiktok-select-slides-prompt =
+    🔢 <b>Нажимайте на кнопки с номерами слайдов, чтобы отметить нужные:</b>
+    
+    Отмечено для скачивания: [ { $selected } ]
 tiktok-err-no-slides-selected = ⚠️ Вы не выбрали ни одного слайда! Отметьте нужные цифры.
 tiktok-auto-video-error = ❌ Ошибка при отправке видео: { $error }
 tiktok-auto-photo-error = ❌ Ошибка при отправке слайдшоу: { $error }
@@ -309,15 +315,24 @@ tiktok-caption-link-text = Ссылка на TikTok
 
 # Понравившиеся
 btn-favorites = ❤️ Понравившиеся
-favorites-categories-title = ❤️ <b>Раздел «Понравившиеся»</b>\n\nВыберите категорию сохраненного контента:
+favorites-categories-title =
+    ❤️ <b>Раздел «Понравившиеся»</b>
+    
+    Выберите категорию сохраненного контента:
 btn-category-tiktok = 📱 TikTok ({ $count })
 favorites-tiktok-title = 📱 <b>Ваши сохраненные видео TikTok (Всего: { $total }):</b>
-favorites-tiktok-empty = 📭 У вас пока нет сохраненных видео TikTok.\n\nНажимайте кнопку <b>«❤️ Сохранить»</b> под выкачанными видео, чтобы добавить их сюда!
+favorites-tiktok-empty =
+    📭 У вас пока нет сохраненных видео TikTok.
+    
+    Нажимайте кнопку <b>«❤️»</b> под выкачанными видео, чтобы добавить их сюда!
 favorites-added-alert = ❤️ Видео добавлено в Понравившиеся!
 favorites-removed-alert = 💔 Видео удалено из Понравившихся.
 btn-fav-save = ❤️
 btn-fav-saved = 💖
-favorites-rename-prompt = ✍️ <b>Введите ваше название для видео:</b>\n\n(Отправьте любой текст до 100 символов, чтобы легко находить ролик)
+favorites-rename-prompt =
+    ✍️ <b>Введите ваше название для видео:</b>
+    
+    (Отправьте любой текст до 100 символов, чтобы легко находить ролик)
 favorites-rename-success = ✅ Название видео успешно обновлено!
 favorites-rename-btn = ✏️ Переименовать
 favorites-rename-too-long = ⚠️ Название слишком длинное ({ $length } символов). Оно было автоматически обрезано до 100 символов.

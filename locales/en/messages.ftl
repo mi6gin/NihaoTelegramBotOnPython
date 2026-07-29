@@ -289,14 +289,20 @@ tiktok-ptiktok-prompt-msg =
 
     Send a link to a TikTok photo carousel (slideshow).
 tiktok-err-no-slideshow = ❌ No image carousel/slideshow found at this link.
-tiktok-slideshow-found-msg = 📸 <b>Slideshow found! Total slides: { $total }</b>\n\nChoose how you want to download images:
+tiktok-slideshow-found-msg =
+    📸 <b>Slideshow found! Total slides: { $total }</b>
+    
+    Choose how you want to download images:
 tiktok-err-slideshow-data = ❌ Slideshow data error.
 tiktok-err-send-slides = ❌ Error sending slides.
-tiktok-select-slides-prompt = 🔢 <b>Click on slide number buttons to select desired ones:</b>\n\nSelected for download: [ { $selected } ]
-tiktok-err-no-slides-selected = ⚠️ You haven't selected any slides! Click on numbers to select.
-tiktok-auto-video-error = ❌ Error sending video: { $error }
-tiktok-auto-photo-error = ❌ Error sending slideshow: { $error }
-tiktok-auto-video-failed = ❌ Unfortunately, failed to download this TikTok video.
+tiktok-select-slides-prompt =
+    🔢 <b>Click on slide number buttons to select desired ones:</b>
+    
+    Selected for download: [ { $selected } ]
+tiktok-err-no-slides-selected = ⚠️ You haven't selected any slides! Mark the required numbers.
+tiktok-auto-video-error = ❌ Video sending error: { $error }
+tiktok-auto-photo-error = ❌ Slideshow sending error: { $error }
+tiktok-auto-video-failed = ❌ Failed to download this TikTok video.
 tiktok-comment-not-found = ⚠️ Comment not found.
 tiktok-comments-link-expired = ⚠️ Post link expired or not found.
 tiktok-comments-loading = ⏳ Loading comments...
@@ -309,20 +315,28 @@ tiktok-caption-link-text = TikTok Link
 
 # Favorites
 btn-favorites = ❤️ Favorites
-favorites-categories-title = ❤️ <b>"Favorites" Section</b>\n\nSelect a saved content category:
+favorites-categories-title =
+    ❤️ <b>"Favorites" Section</b>
+    
+    Select a saved content category:
 btn-category-tiktok = 📱 TikTok ({ $count })
 favorites-tiktok-title = 📱 <b>Your saved TikTok videos (Total: { $total }):</b>
-favorites-tiktok-empty = 📭 You don't have any saved TikTok videos yet.\n\nClick the <b>"❤️ Save"</b> button under TikTok videos to see them here!
+favorites-tiktok-empty =
+    📭 You don't have any saved TikTok videos yet.
+    
+    Click the <b>"❤️"</b> button under TikTok videos to see them here!
 favorites-added-alert = ❤️ Video added to Favorites!
 favorites-removed-alert = 💔 Video removed from Favorites.
 btn-fav-save = ❤️
 btn-fav-saved = 💖
-favorites-rename-prompt = ✍️ <b>Enter a custom title for the video:</b>\n\n(Send any text up to 100 characters to easily find the video)
+favorites-rename-prompt =
+    ✍️ <b>Enter a custom title for the video:</b>
+    
+    (Send any text up to 100 characters to easily find the video)
 favorites-rename-success = ✅ Video title successfully updated!
 favorites-rename-btn = ✏️ Rename
 favorites-rename-too-long = ⚠️ The title was too long ({ $length } chars). It was automatically truncated to 100 characters.
 favorites-rename-empty = ⚠️ Title cannot be empty. Please send a text title.
-
 
 
 

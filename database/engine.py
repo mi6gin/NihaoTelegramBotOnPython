@@ -52,7 +52,8 @@ class Base(DeclarativeBase):
 
 async def init_db():
     """
-    Создает все таблицы базы данных, если они еще не существуют.
+    Создает все таблицы базы данных, если они еще не существуют,
+    а также автоматически добавляет новые колонки в существующие таблицы (автомиграция).
     """
     try:
         logger.info("Инициализация базы данных...")
@@ -63,8 +64,21 @@ async def init_db():
             from database.models.fsm_state import FSMStateModel
             from database.models.bot_text import BotText
             from database.models.favorite_tiktok import FavoriteTikTok
+            from sqlalchemy import inspect, text
             
             await conn.run_sync(Base.metadata.create_all)
+
+            def _auto_migrate(connection):
+                inspector = inspect(connection)
+                tables = inspector.get_table_names()
+                if "favorite_tiktoks" in tables:
+                    columns = [col["name"] for col in inspector.get_columns("favorite_tiktoks")]
+                    if "file_id" not in columns:
+                        logger.info("Автомиграция: Добавление колонки file_id в таблицу favorite_tiktoks...")
+                        connection.execute(text("ALTER TABLE favorite_tiktoks ADD COLUMN file_id VARCHAR(256)"))
+
+            await conn.run_sync(_auto_migrate)
+
         logger.info("База данных успешно инициализирована.")
     except Exception as e:
         logger.error(f"Ошибка при инициализации базы данных: {e}", exc_info=True)

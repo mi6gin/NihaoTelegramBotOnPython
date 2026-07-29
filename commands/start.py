@@ -13,7 +13,7 @@ from utils.logger import logger
 router = Router(name="user_start")
 
 
-@router.message(CommandStart(), IsPrivate())
+@router.message(CommandStart())
 async def cmd_start(message: Message, db_user: User, i18n: I18nContext):
     """
     Обработчик команды /start.
@@ -28,7 +28,7 @@ async def cmd_start(message: Message, db_user: User, i18n: I18nContext):
     )
 
 
-@router.message(Command("help"), IsPrivate())
+@router.message(Command("help"))
 async def cmd_help(message: Message, db_user: User, i18n: I18nContext):
     """
     Обработчик команды /help.
@@ -42,7 +42,7 @@ async def cmd_help(message: Message, db_user: User, i18n: I18nContext):
     await message.answer(help_text)
 
 
-@router.message(Command("about"), IsPrivate())
+@router.message(Command("about"))
 async def cmd_about(message: Message, i18n: I18nContext):
     """
     Обработчик команды /about.
@@ -53,7 +53,7 @@ async def cmd_about(message: Message, i18n: I18nContext):
 
 # --- Хендлеры возврата в меню ---
 
-@router.callback_query(F.data == "back_to_menu", IsPrivate())
+@router.callback_query(F.data == "back_to_menu")
 async def process_back_to_menu(callback: CallbackQuery, db_user: User, i18n: I18nContext, state: FSMContext):
     """
     Возврат в главное меню при нажатии inline-кнопки.

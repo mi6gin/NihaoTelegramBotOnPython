@@ -457,10 +457,11 @@ async def tiktok_cancel(callback: CallbackQuery, state: FSMContext):
 # 📌 ПУНКТ 2: АВТОПЕРЕХВАТ ССЫЛОК TIKTOK В ЧАТЕ (Фильтр сообщений)
 # =====================================================================
 
-@router.message(IsPrivate(), StateFilter(None), F.text)
+@router.message(StateFilter(None), F.text)
 async def auto_download_tiktok_link(message: Message, db_user: User, i18n: I18nContext):
     """
     Автоматически распознает ссылки на TikTok в тексте сообщения и отправляет видео/слайдшоу.
+    Работает как в личных сообщениях, так и в группах.
     """
     tiktok_url = TikTokParser.extract_url_from_text(message.text)
     if not tiktok_url:
@@ -591,7 +592,7 @@ async def render_comment_card(
         await callback.message.answer(text=text, reply_markup=reply_markup)
 
 
-@router.callback_query(F.data.startswith("tt_comm_"), IsPrivate(), StateFilter("*"))
+@router.callback_query(F.data.startswith("tt_comm_"), StateFilter("*"))
 async def start_tiktok_comments_card(callback: CallbackQuery, i18n: Optional[I18nContext] = None):
     """
     Показывает первую карточку комментария при клике на '💬 Комментарии'.
@@ -618,7 +619,7 @@ async def start_tiktok_comments_card(callback: CallbackQuery, i18n: Optional[I18
     await render_comment_card(callback, short_id, index=1, is_edit=False, i18n=i18n)
 
 
-@router.callback_query(F.data.startswith("tt_card_"), IsPrivate(), StateFilter("*"))
+@router.callback_query(F.data.startswith("tt_card_"), StateFilter("*"))
 async def navigate_tiktok_comment_card(callback: CallbackQuery, i18n: Optional[I18nContext] = None):
     """
     Переключение карточек комментариев (◀️ Назад / Вперед ▶️).
@@ -631,7 +632,7 @@ async def navigate_tiktok_comment_card(callback: CallbackQuery, i18n: Optional[I
     await render_comment_card(callback, short_id, index=index, is_edit=True, i18n=i18n)
 
 
-@router.callback_query(F.data.startswith("tt_tr_"), IsPrivate(), StateFilter("*"))
+@router.callback_query(F.data.startswith("tt_tr_"), StateFilter("*"))
 async def translate_tiktok_comment_card(callback: CallbackQuery, db_user: User, i18n: Optional[I18nContext] = None):
     """
     Переводит текущий комментарий на выбранный язык пользователя.
@@ -672,7 +673,7 @@ async def translate_tiktok_comment_card(callback: CallbackQuery, db_user: User, 
     )
 
 
-@router.callback_query(F.data == "tiktok_comments_close", IsPrivate(), StateFilter("*"))
+@router.callback_query(F.data == "tiktok_comments_close", StateFilter("*"))
 async def close_tiktok_comments(callback: CallbackQuery):
     """
     Удаляет сообщение с карточкой комментариев.

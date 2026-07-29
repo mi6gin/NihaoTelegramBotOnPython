@@ -62,6 +62,7 @@ async def init_db():
             from database.models.ticket import Ticket
             from database.models.fsm_state import FSMStateModel
             from database.models.bot_text import BotText
+            from database.models.favorite_tiktok import FavoriteTikTok
             
             await conn.run_sync(Base.metadata.create_all)
         logger.info("База данных успешно инициализирована.")

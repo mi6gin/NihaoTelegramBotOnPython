@@ -82,13 +82,79 @@ def get_tiktok_cancel_keyboard(i18n: I18nContext, callback_data: str = "tiktok_c
     return builder.as_markup()
 
 
-def get_tiktok_comments_button_keyboard(short_id: str, i18n: Optional[I18nContext] = None) -> InlineKeyboardMarkup:
+def get_tiktok_comments_button_keyboard(
+    short_id: str,
+    is_favorite: bool = False,
+    i18n: Optional[I18nContext] = None
+) -> InlineKeyboardMarkup:
     """
-    Инлайн-кнопка "💬 Комментарии" под отправленным видео/слайдшоу.
+    Инлайн-кнопки под отправленным видео/слайдшоу:
+    [ ❤️ Сохранить ] / [ 💖 В Понравишихся ] и [ 💬 Комментарии ].
     """
     builder = InlineKeyboardBuilder()
+
+    if is_favorite:
+        fav_text = i18n.get("btn-fav-saved") if i18n else "💖 В Понравишихся"
+    else:
+        fav_text = i18n.get("btn-fav-save") if i18n else "❤️ Сохранить"
+
+    builder.button(text=fav_text, callback_data=f"fav_toggle_{short_id}")
+
     btn_text = i18n.get("btn-tiktok-comments") if i18n else "💬 Комментарии"
     builder.button(text=btn_text, callback_data=f"tt_comm_{short_id}")
+
+    builder.adjust(2)
+    return builder.as_markup()
+
+
+def get_favorite_categories_keyboard(fav_count: int, i18n: I18nContext) -> InlineKeyboardMarkup:
+    """
+    Клавиатура выбора категорий в разделе "Понравившиеся".
+    """
+    builder = InlineKeyboardBuilder()
+    builder.button(text=i18n.get("btn-category-tiktok", count=str(fav_count)), callback_data="fav_category_tiktok")
+    builder.button(text=i18n.get("btn-back-to-menu"), callback_data="back_to_menu")
+    builder.adjust(1)
+    return builder.as_markup()
+
+
+def get_favorite_tiktoks_keyboard(
+    favorites: list,
+    page: int,
+    total_pages: int,
+    i18n: I18nContext
+) -> InlineKeyboardMarkup:
+    """
+    Инлайн-кнопки сохраненных видео TikTok с названиями ролей и пагинацией.
+    """
+    builder = InlineKeyboardBuilder()
+
+    for fav in favorites:
+        # Обрезаем название если слишком длинное
+        title = fav.title.strip()
+        if not title:
+            title = "TikTok Video"
+        display_title = title[:45] + "..." if len(title) > 48 else title
+        builder.button(text=f"🎥 {display_title}", callback_data=f"fav_tt_play_{fav.id}")
+
+    builder.adjust(1)
+
+    # Пагинация
+    if total_pages > 1:
+        pag_builder = InlineKeyboardBuilder()
+        if page > 1:
+            pag_builder.button(text="◀️", callback_data=f"fav_tt_page_{page - 1}")
+        pag_builder.button(text=f"{page}/{total_pages}", callback_data="noop")
+        if page < total_pages:
+            pag_builder.button(text="▶️", callback_data=f"fav_tt_page_{page + 1}")
+        pag_builder.adjust(3 if (page > 1 and page < total_pages) else 2)
+        builder.attach(pag_builder)
+
+    back_builder = InlineKeyboardBuilder()
+    back_builder.button(text=i18n.get("btn-back-to-menu"), callback_data="user_favorites")
+    back_builder.adjust(1)
+    builder.attach(back_builder)
+
     return builder.as_markup()
 
 

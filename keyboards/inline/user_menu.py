@@ -13,6 +13,7 @@ def get_user_menu_keyboard(i18n: I18nContext, is_admin: bool = False) -> InlineK
     # Добавляем основные кнопки
     builder.button(text=i18n.get("btn-profile"), callback_data="user_profile")
     builder.button(text=i18n.get("btn-tiktok-account"), callback_data="tiktok_account_menu")
+    builder.button(text=i18n.get("btn-favorites"), callback_data="user_favorites")
     builder.button(text=i18n.get("btn-catalog"), callback_data="user_catalog")
     builder.button(text=i18n.get("btn-support"), callback_data="user_support")
     

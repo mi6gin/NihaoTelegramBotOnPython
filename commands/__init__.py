@@ -5,6 +5,7 @@ from .catalog import router as catalog_router
 from .support import router as support_router
 from .dedinside import router as dedinside_router
 from .tiktok import router as tiktok_router
+from .favorites import router as favorites_router
 
 # Роутер для пользовательских команд
 router = Router(name="user_commands")
@@ -15,5 +16,6 @@ router.include_routers(
     catalog_router,
     support_router,
     dedinside_router,
-    tiktok_router
+    tiktok_router,
+    favorites_router
 )

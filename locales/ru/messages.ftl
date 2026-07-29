@@ -307,4 +307,16 @@ tiktok-downloading-status = 📥 <b>Скачиваю</b> <a href="{ $link }">С�
 tiktok-uploading-status = 📤 <b>Отправляю</b> <a href="{ $link }">Ссылка на TikTok</a>{ $dots }
 tiktok-caption-link-text = Ссылка на TikTok
 
+# Понравившиеся
+btn-favorites = ❤️ Понравившиеся
+favorites-categories-title = ❤️ <b>Раздел «Понравившиеся»</b>\n\nВыберите категорию сохраненного контента:
+btn-category-tiktok = 📱 TikTok ({ $count })
+favorites-tiktok-title = 📱 <b>Ваши сохраненные видео TikTok (Всего: { $total }):</b>
+favorites-tiktok-empty = 📭 У вас пока нет сохраненных видео TikTok.\n\nНажимайте кнопку <b>«❤️ Сохранить»</b> под выкачанными видео, чтобы добавить их сюда!
+favorites-added-alert = ❤️ Видео добавлено в Понравившиеся!
+favorites-removed-alert = 💔 Видео удалено из Понравившихся.
+btn-fav-save = ❤️ Сохранить
+btn-fav-saved = 💖 В Понравишихся
+
+
 

@@ -572,7 +572,14 @@ async def auto_download_tiktok_link(message: Message, db_user: User, i18n: I18nC
 
     resolved_url = info.get("resolved_url") or tiktok_url
     short_id = register_post_url(tiktok_url, resolved_url=resolved_url)
-    reply_kb = get_tiktok_comments_button_keyboard(short_id, i18n=i18n)
+    if info.get("title"):
+        _post_urls_cache[f"title_{short_id}"] = info["title"]
+
+    video_id = TikTokParser.extract_video_id(tiktok_url) or TikTokParser.extract_video_id(resolved_url) or short_id
+    from database.repository.favorite_repo import FavoriteTikTokRepository
+    is_fav = await FavoriteTikTokRepository.is_favorite(session, db_user.telegram_id, video_id)
+
+    reply_kb = get_tiktok_comments_button_keyboard(short_id, is_favorite=is_fav, i18n=i18n)
 
     # 4. Если это фото-слайдшоу
     if info.get("type") == "photo" and info.get("images"):

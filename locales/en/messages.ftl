@@ -307,4 +307,16 @@ tiktok-downloading-status = 📥 <b>Downloading</b> <a href="{ $link }">TikTok L
 tiktok-uploading-status = 📤 <b>Sending</b> <a href="{ $link }">TikTok Link</a>{ $dots }
 tiktok-caption-link-text = TikTok Link
 
+# Favorites
+btn-favorites = ❤️ Favorites
+favorites-categories-title = ❤️ <b>"Favorites" Section</b>\n\nSelect a saved content category:
+btn-category-tiktok = 📱 TikTok ({ $count })
+favorites-tiktok-title = 📱 <b>Your saved TikTok videos (Total: { $total }):</b>
+favorites-tiktok-empty = 📭 You don't have any saved TikTok videos yet.\n\nClick the <b>"❤️ Save"</b> button under TikTok videos to see them here!
+favorites-added-alert = ❤️ Video added to Favorites!
+favorites-removed-alert = 💔 Video removed from Favorites.
+btn-fav-save = ❤️ Save
+btn-fav-saved = 💖 In Favorites
+
+
 

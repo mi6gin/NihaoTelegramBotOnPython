@@ -71,10 +71,10 @@ class AnimatedStatus:
         self._running = False
 
     async def _animate(self):
-        dot_count = 1
+        self._dot_count = 1
         while self._running:
             try:
-                dots = "." * dot_count
+                dots = "." * self._dot_count
                 text = self.i18n.get(self.base_key, link=self.link, dots=dots)
                 await self.bot.edit_message_text(
                     chat_id=self.chat_id,
@@ -84,15 +84,29 @@ class AnimatedStatus:
                 )
             except Exception:
                 pass
-            dot_count = (dot_count % 3) + 1
+            self._dot_count = (self._dot_count % 3) + 1
             await asyncio.sleep(0.6)
 
     def start(self):
         self._running = True
         self.task = asyncio.create_task(self._animate())
 
-    def update_key(self, new_key: str):
+    async def set_key(self, new_key: str):
+        """
+        Мгновенно обгоняет цикл анимации и сразу меняет статусный текст сообщения.
+        """
         self.base_key = new_key
+        dots = "." * getattr(self, "_dot_count", 1)
+        try:
+            text = self.i18n.get(self.base_key, link=self.link, dots=dots)
+            await self.bot.edit_message_text(
+                chat_id=self.chat_id,
+                message_id=self.message_id,
+                text=text,
+                disable_web_page_preview=True
+            )
+        except Exception:
+            pass
 
     async def stop(self):
         self._running = False
@@ -565,7 +579,7 @@ async def auto_download_tiktok_link(message: Message, db_user: User, i18n: I18nC
         media_group = [InputMediaPhoto(media=url, caption=caption if i == 0 else None) for i, url in enumerate(images[:10])]
         
         # Меняем статус на «Отправляю [ссылка]...» и запускаем анимацию отправки бота
-        anim.update_key("tiktok-uploading-status")
+        await anim.set_key("tiktok-uploading-status")
         try:
             await message.bot.send_chat_action(chat_id=message.chat.id, action="upload_photo")
         except Exception:
@@ -585,7 +599,7 @@ async def auto_download_tiktok_link(message: Message, db_user: User, i18n: I18nC
     video_file = await TikTokParser.download_video(tiktok_url)
 
     # Меняем статус на «Отправляю [ссылка]...» и запускаем анимацию отправки бота
-    anim.update_key("tiktok-uploading-status")
+    await anim.set_key("tiktok-uploading-status")
     try:
         await message.bot.send_chat_action(chat_id=message.chat.id, action="upload_video")
     except Exception:

@@ -108,6 +108,7 @@ async def toggle_favorite_video(callback: CallbackQuery, session: AsyncSession, 
 
     video_id = TikTokParser.extract_video_id(url) or short_id
     title = _post_urls_cache.get(f"title_{short_id}", "TikTok Video")
+    file_id = _post_urls_cache.get(f"file_id_{short_id}")
 
     # Переключаем статус в базе данных
     is_added = await FavoriteTikTokRepository.toggle_favorite(
@@ -115,7 +116,8 @@ async def toggle_favorite_video(callback: CallbackQuery, session: AsyncSession, 
         telegram_id=callback.from_user.id,
         video_id=video_id,
         url=url,
-        title=title
+        title=title,
+        file_id=file_id
     )
 
     # Обновляем клавиатуру под сообщением
@@ -204,7 +206,9 @@ async def play_favorite_tiktok(callback: CallbackQuery, session: AsyncSession, d
     if video_file and os.path.exists(video_file):
         try:
             video_input = FSInputFile(path=video_file)
-            await callback.message.answer_video(video=video_input, caption=caption, reply_markup=reply_kb)
+            sent_msg = await callback.message.answer_video(video=video_input, caption=caption, reply_markup=reply_kb)
+            if sent_msg and sent_msg.video:
+                await FavoriteTikTokRepository.update_file_id(session, fav_id, sent_msg.video.file_id)
         except Exception as e:
             logger.error(f"Favorite play video error: {e}")
             await callback.message.answer(i18n.get("tiktok-auto-video-error", error=str(e)))

@@ -22,7 +22,14 @@ class FavoriteTikTokRepository:
         return result.scalar_one_or_none() is not None
 
     @staticmethod
-    async def toggle_favorite(session: AsyncSession, telegram_id: int, video_id: str, url: str, title: str) -> bool:
+    async def toggle_favorite(
+        session: AsyncSession,
+        telegram_id: int,
+        video_id: str,
+        url: str,
+        title: str,
+        file_id: Optional[str] = None
+    ) -> bool:
         """
         Инвертирует статус понравившегося видео: добавляет если нет, удаляет если уже сохранено.
         Возвращает True если добавлено, False если удалено.
@@ -43,7 +50,8 @@ class FavoriteTikTokRepository:
                 telegram_id=telegram_id,
                 video_id=video_id,
                 url=url,
-                title=title[:250] if title else "TikTok Video"
+                title=title[:250] if title else "TikTok Video",
+                file_id=file_id
             )
             session.add(new_fav)
             await session.commit()
@@ -97,6 +105,20 @@ class FavoriteTikTokRepository:
         fav = result.scalar_one_or_none()
         if fav:
             fav.title = title[:250] if title else "TikTok Video"
+            await session.commit()
+            return True
+        return False
+
+    @staticmethod
+    async def update_file_id(session: AsyncSession, fav_id: int, file_id: str) -> bool:
+        """
+        Обновляет telegram file_id сохраненного видео.
+        """
+        query = select(FavoriteTikTok).where(FavoriteTikTok.id == fav_id)
+        result = await session.execute(query)
+        fav = result.scalar_one_or_none()
+        if fav:
+            fav.file_id = file_id
             await session.commit()
             return True
         return False

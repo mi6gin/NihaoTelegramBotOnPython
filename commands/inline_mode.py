@@ -2,6 +2,7 @@ from aiogram import Router
 from aiogram.types import (
     InlineQuery,
     InlineQueryResultArticle,
+    InlineQueryResultCachedVideo,
     InputTextMessageContent,
     InlineKeyboardMarkup,
     InlineKeyboardButton,
@@ -19,7 +20,8 @@ TIKTOK_ICON = "https://cdn-icons-png.flaticon.com/512/3046/3046124.png"
 async def inline_favorites_query(inline_query: InlineQuery, session: AsyncSession, i18n: I18nContext):
     """
     Обработчик инлайн-поиска по сохраненным «Понравившимся» видео пользователя.
-    Работает в любом чате Telegram при вводе @bot_username.
+    При клике на видео в инлайне отправляется САМО ВИДЕО (InlineQueryResultCachedVideo),
+    а не текстовая ссылка!
     """
     user_id = inline_query.from_user.id
     query_text = inline_query.query.strip().lower()
@@ -63,35 +65,50 @@ async def inline_favorites_query(inline_query: InlineQuery, session: AsyncSessio
             )
         else:
             for fav in matching_favs[:50]:
-                keyboard = InlineKeyboardMarkup(inline_keyboard=[
-                    [
-                        InlineKeyboardButton(
-                            text=i18n.get("btn-inline-watch"),
-                            url=fav.url
+                caption = f"🎬 <b>{fav.title}</b>\n\n<a href=\"{fav.url}\">Ссылка на TikTok</a>"
+
+                if fav.file_id:
+                    # 1. Отправляем НАСТОЯЩИЙ ВИДЕОФАЙЛ из кэша Telegram
+                    results.append(
+                        InlineQueryResultCachedVideo(
+                            id=f"fav_{fav.id}",
+                            video_file_id=fav.file_id,
+                            title=f"❤️ {fav.title}",
+                            description=f"Отправить видео • {fav.url}",
+                            caption=caption,
+                            parse_mode="HTML"
                         )
-                    ]
-                ])
-
-                content_text = i18n.get(
-                    "favorites-inline-share-text",
-                    title=fav.title,
-                    link=fav.url,
-                    user=inline_query.from_user.first_name
-                )
-
-                results.append(
-                    InlineQueryResultArticle(
-                        id=f"fav_{fav.id}",
-                        title=f"❤️ {fav.title}",
-                        description=f"TikTok • {fav.url}",
-                        thumbnail_url=TIKTOK_ICON,
-                        input_message_content=InputTextMessageContent(
-                            message_text=content_text,
-                            parse_mode="HTML",
-                            disable_web_page_preview=False
-                        ),
-                        reply_markup=keyboard
                     )
-                )
+                else:
+                    # 2. Если file_id еще не закэширован (старые записи) -> карточка с кнопкой перехода
+                    keyboard = InlineKeyboardMarkup(inline_keyboard=[
+                        [
+                            InlineKeyboardButton(
+                                text=i18n.get("btn-inline-watch"),
+                                url=fav.url
+                            )
+                        ]
+                    ])
+
+                    content_text = i18n.get(
+                        "favorites-inline-share-text",
+                        title=fav.title,
+                        link=fav.url,
+                        user=inline_query.from_user.first_name
+                    )
+
+                    results.append(
+                        InlineQueryResultArticle(
+                            id=f"fav_{fav.id}",
+                            title=f"❤️ {fav.title}",
+                            description=f"TikTok • {fav.url}",
+                            thumbnail_url=TIKTOK_ICON,
+                            input_message_content=InputTextMessageContent(
+                                message_text=content_text,
+                                parse_mode="HTML"
+                            ),
+                            reply_markup=keyboard
+                        )
+                    )
 
     await inline_query.answer(results, cache_time=5, is_personal=True)

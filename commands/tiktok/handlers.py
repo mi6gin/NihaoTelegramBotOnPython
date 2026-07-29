@@ -616,7 +616,9 @@ async def auto_download_tiktok_link(message: Message, db_user: User, session: As
     if video_file and os.path.exists(video_file):
         try:
             video_input = FSInputFile(path=video_file)
-            await message.answer_video(video=video_input, caption=caption, reply_markup=reply_kb)
+            sent_msg = await message.answer_video(video=video_input, caption=caption, reply_markup=reply_kb)
+            if sent_msg and sent_msg.video:
+                _post_urls_cache[f"file_id_{short_id}"] = sent_msg.video.file_id
         except Exception as e:
             logger.error(f"Auto-download video error: {e}")
             await message.answer(i18n.get("tiktok-auto-video-error", error=str(e)))

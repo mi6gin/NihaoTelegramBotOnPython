@@ -113,7 +113,7 @@ async def render_tickets_view(
         )
 
 
-@router.callback_query(F.data.startswith("admin_tickets_view_"), IsPrivate(), IsAdmin())
+@router.callback_query(F.data.startswith("admin_tickets_view_"), IsAdmin())
 async def view_open_tickets(
     callback: CallbackQuery, 
     session: AsyncSession, 
@@ -136,7 +136,7 @@ async def view_open_tickets(
     await render_tickets_view(callback.message, tickets, index, i18n, edit=True)
 
 
-@router.callback_query(F.data.startswith("admin_ticket_close_no_reply_"), IsPrivate(), IsAdmin())
+@router.callback_query(F.data.startswith("admin_ticket_close_no_reply_"), IsAdmin())
 async def close_ticket_no_reply(
     callback: CallbackQuery, 
     session: AsyncSession, 
@@ -176,7 +176,7 @@ async def close_ticket_no_reply(
     await render_tickets_view(callback.message, tickets, index, i18n, edit=True)
 
 
-@router.callback_query(F.data.startswith("admin_ticket_reply_"), IsPrivate(), IsAdmin())
+@router.callback_query(F.data.startswith("admin_ticket_reply_"), IsAdmin())
 async def start_ticket_reply(
     callback: CallbackQuery, 
     i18n: I18nContext,
@@ -205,7 +205,7 @@ async def start_ticket_reply(
     )
 
 
-@router.callback_query(F.data.startswith("cancel_ticket_reply_"), IsPrivate(), IsAdmin())
+@router.callback_query(F.data.startswith("cancel_ticket_reply_"), IsAdmin())
 async def cancel_ticket_reply(
     callback: CallbackQuery, 
     session: AsyncSession, 
@@ -224,7 +224,7 @@ async def cancel_ticket_reply(
     await render_tickets_view(callback.message, tickets, index, i18n, edit=True)
 
 
-@router.message(AdminTicketStates.waiting_for_reply, IsPrivate(), IsAdmin())
+@router.message(AdminTicketStates.waiting_for_reply, IsAdmin())
 async def process_ticket_reply(
     message: Message, 
     session: AsyncSession, 
@@ -293,7 +293,7 @@ async def process_ticket_reply(
     await render_tickets_view(message, tickets, index, i18n, edit=False)
 
 
-@router.callback_query(F.data.startswith("admin_alert_reply_"), IsPrivate(), IsAdmin())
+@router.callback_query(F.data.startswith("admin_alert_reply_"), IsAdmin())
 async def start_alert_ticket_reply(
     callback: CallbackQuery, 
     i18n: I18nContext,
@@ -319,7 +319,7 @@ async def start_alert_ticket_reply(
     )
 
 
-@router.callback_query(F.data.startswith("cancel_alert_reply_"), IsPrivate(), IsAdmin())
+@router.callback_query(F.data.startswith("cancel_alert_reply_"), IsAdmin())
 async def cancel_alert_reply(
     callback: CallbackQuery, 
     i18n: I18nContext,
@@ -336,7 +336,7 @@ async def cancel_alert_reply(
         pass
 
 
-@router.callback_query(F.data.startswith("admin_alert_close_"), IsPrivate(), IsAdmin())
+@router.callback_query(F.data.startswith("admin_alert_close_"), IsAdmin())
 async def close_alert_ticket_no_reply(
     callback: CallbackQuery, 
     session: AsyncSession, 

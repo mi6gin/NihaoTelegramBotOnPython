@@ -1,4 +1,4 @@
-"""Support-ticket use cases."""
+"""Сценарии использования тикетов техподдержки."""
 
 from typing import Any, Protocol
 

@@ -1,4 +1,4 @@
-"""TikTok domain values used independently of Telegram and persistence."""
+"""Доменные значения TikTok, независимые от Telegram и слоя хранения."""
 
 from dataclasses import dataclass
 from typing import Any, Mapping
@@ -6,7 +6,7 @@ from typing import Any, Mapping
 
 @dataclass(frozen=True, slots=True)
 class TikTokPost:
-    """Normalized metadata for one TikTok post."""
+    """Нормализованные метаданные для одного поста TikTok."""
 
     source_url: str
     resolved_url: str

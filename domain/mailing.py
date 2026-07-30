@@ -1,4 +1,4 @@
-"""Mailing audience rules without framework or database dependencies."""
+"""Правила аудитории рассылок без зависимостей от фреймворков и базы данных."""
 
 from dataclasses import dataclass
 from enum import Enum

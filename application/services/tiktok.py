@@ -1,8 +1,7 @@
-"""Application orchestration for TikTok posts.
+"""Оркестрация постов TikTok на уровне приложения.
 
-This module deliberately has no dependency on Aiogram, SQLAlchemy, or a concrete
-HTTP client. Presentation and infrastructure are connected at the composition
-edge.
+Модуль намеренно не имеет зависимостей от Aiogram, SQLAlchemy или конкретного
+HTTP-клиента. Презентация и инфраструктура подключаются на границе сборки.
 """
 
 from collections.abc import MutableMapping
@@ -12,7 +11,7 @@ from domain.tiktok import TikTokPost
 
 
 class TikTokGateway(Protocol):
-    """Operations required from a TikTok infrastructure adapter."""
+    """Операции, требуемые от инфраструктурного адаптера TikTok."""
 
     @staticmethod
     def extract_video_id(url: str) -> str | None: ...
@@ -29,7 +28,7 @@ class TikTokGateway(Protocol):
 
 
 class TikTokService:
-    """Coordinate post metadata and short-lived interaction state."""
+    """Координация метаданных постов и короткоживущего состояния взаимодействия."""
 
     def __init__(
         self,

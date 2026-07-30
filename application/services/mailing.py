@@ -1,4 +1,4 @@
-"""Mailing use cases."""
+"""Сценарии использования рассылок."""
 
 from typing import Any, Protocol
 

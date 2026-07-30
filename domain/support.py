@@ -1,8 +1,8 @@
-"""Support-ticket business rules."""
+"""Бизнес-правила тикетов техподдержки."""
 
 
 class InvalidTicketMessage(ValueError):
-    """Raised when a support message violates the accepted length."""
+    """Исключение, вызываемое при нарушении допустимой длины сообщения тикета."""
 
 
 def validate_ticket_message(

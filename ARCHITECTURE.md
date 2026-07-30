@@ -1,90 +1,82 @@
-# Architecture
+# Архитектура проекта
 
-The project follows a layered architecture with dependencies pointing inward:
+Проект построен по принципам слоистой архитектуры (Layered / Clean Architecture) с зависимостями, направленными исключительно внутрь:
 
 ```text
-Telegram presentation
+Telegram-презентация (presentation/)
         |
         v
-Application services
+Сервисы приложения (application/services/)
         |
         v
-Domain
+Домен (domain/)
 
-Infrastructure --------> Application ports / Domain
+Инфраструктура (infrastructure/) --------> Порты приложения / Домен
 ```
 
-## Layers
+## Слои архитектуры
 
 ### `domain/`
 
-Framework-independent business values and rules. It must not import Aiogram,
-SQLAlchemy, repositories, HTTP clients, or presentation modules.
+Чистая бизнес-логика и доменные модели, независимые от фреймворков. Слой не должен импортировать Aiogram, SQLAlchemy, репозитории, HTTP-клиенты или модули презентации.
 
-Current modules:
+Текущие модули:
 
-- `tiktok.py` normalizes post metadata.
-- `mailing.py` describes mailing audiences.
-- `support.py` validates support-ticket messages.
+- `tiktok.py` — нормализация метаданных постов и ссылок.
+- `mailing.py` — описание аудиторий рассылки.
+- `support.py` — валидация сообщений тикетов техподдержки.
 
 ### `application/services/`
 
-Use-case orchestration. Services depend on domain objects and small `Protocol`
-ports, not on concrete databases or Telegram.
+Оркестрация сценариев использования (Use Cases). Сервисы зависят только от доменных объектов и небольших `Protocol`-интерфейсов, а не от конкретных СУБД или Telegram API.
 
-Current services:
+Текущие сервисы:
 
-- `TikTokService` coordinates post references, metadata, and comment state.
-- `MailingService` resolves an audience through a repository port.
-- `SupportService` creates a validated ticket and obtains its recipients.
+- `TikTokService` — координирует ссылки на посты, метаданные и состояние комментариев.
+- `MailingService` — формирует аудитории рассылок через порт репозитория.
+- `SupportService` — создает валидированные тикеты и получает список получателей.
 
-### `infrastructure/` and `database/`
+### `infrastructure/` и `database/`
 
-Concrete adapters for external systems.
+Конкретные адаптеры для работы с внешними системами.
 
-- `infrastructure/tiktok/` contains the HTTP/`yt-dlp` TikTok adapter.
-- `database/models/` contains SQLAlchemy mappings.
-- `database/repository/` contains persistence implementations.
+- `infrastructure/tiktok/` — содержит HTTP/`yt-dlp` адаптер парсинга TikTok.
+- `database/models/` — содержит ORM-маппинги SQLAlchemy.
+- `database/repository/` — содержит конкретные реализации репозиториев СУБД.
 
-`database/` is retained as a top-level package because Alembic migrations and
-existing imports rely on it; architecturally it belongs to infrastructure.
+Пакет `database/` сохранен на верхнем уровне, так как миграции Alembic и существующие импорты полагаются на него; архитектурно он относится к слою инфраструктуры.
 
-### Telegram presentation
+### Презентация Telegram (`presentation/telegram/`)
 
-`presentation/telegram/` contains all Aiogram routers and handlers, grouped by
-audience or feature:
+Директория `presentation/telegram/` содержит все роутеры и хендлеры Aiogram, сгруппированные по назначению и функционалу:
 
-- `user/` contains user-facing routes.
-- `admin/` contains administrative routes.
-- `tiktok/` contains the TikTok feature routes, states, and keyboards.
-- `errors/` contains global error routes.
-- `router.py` composes them into the root router.
+- `user/` — пользовательские роуты.
+- `admin/` — административные роуты.
+- `tiktok/` — роуты функции TikTok, состояния FSM и клавиатуры.
+- `errors/` — глобальная обработка ошибок Telegram.
+- `router.py` — объединяет все роутеры в корневой роутер приложения.
 
-Shared keyboards, filters, and middleware remain in their top-level packages.
-Together these modules translate Aiogram events into application service calls
-and render the results.
+Общие клавиатуры, фильтры и мидлвари остаются в своих пакетах верхнего уровня.
+Вместе эти модули транслируют события Aiogram в вызовы сервисов приложения и отображают результаты пользователю.
 
 ### `application/`
 
-The package root is also the composition and lifecycle layer. `bootstrap.py`
-wires concrete adapters to the bot and owns startup/shutdown.
+Корень пакета также является слоем сборки и жизненного цикла. `bootstrap.py` связывает конкретные адаптеры с ботом и управляет запуском/остановкой.
 
-## Dependency rules
+## Правила зависимостей
 
-1. `domain` imports only the Python standard library and other domain modules.
-2. `application.services` may import `domain`, but not Aiogram, SQLAlchemy,
-   presentation, repositories, or infrastructure.
-3. Presentation may call application services and format domain results.
-4. Infrastructure implements ports required by application services.
-5. Repositories own queries and transactions; handlers must not build new
-   SQLAlchemy queries.
+1. `domain` импортирует только стандартную библиотеку Python и другие доменные модули.
+2. `application.services` может импортировать `domain`, но не Aiogram, SQLAlchemy, презентацию, репозитории или инфраструктуру.
+3. Презентация может вызывать сервисы приложения и форматировать доменные результаты.
+4. Инфраструктура реализует порты, требуемые сервисами приложения.
+5. Репозитории владеют запросами и транзакциями; хендлеры не должны строить новые сырые запросы SQLAlchemy.
 
-`tests/test_architecture.py` enforces the first two rules.
+Правила проверяются автоматически в `tests/test_architecture.py`.
 
-## Adding a feature
+## Добавление новой фичи
 
-1. Put invariants and framework-independent values in `domain/`.
-2. Define the use case and dependency protocols in `application/services/`.
-3. Implement protocols in `database/repository/` or `infrastructure/`.
-4. Wire the implementation at the presentation/composition edge.
-5. Keep handlers focused on input parsing, service invocation, and output.
+1. Разместите инварианты и не зависящие от фреймворков структуры в `domain/`.
+2. Определите сценарий использования и протоколы зависимостей в `application/services/`.
+3. Реализуйте протоколы в `database/repository/` или `infrastructure/`.
+4. Соберите реализацию на границе презентации/композиции.
+5. Держите хендлеры сфокусированными на парсинге ввода, вызове сервисов и отображении вывода.

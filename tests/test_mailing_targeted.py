@@ -6,7 +6,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram_i18n import I18nContext
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from routers.admin.mailing import (
+from presentation.telegram.admin.mailing import (
     start_mailing_panel,
     show_filters_submenu,
     show_themes_submenu,
@@ -92,7 +92,7 @@ async def test_view_target_list():
     callback.answer = AsyncMock()
     callback.message = MagicMock()
     callback.message.edit_text = AsyncMock()
-    from routers.admin.mailing import USERS_CACHE
+    from presentation.telegram.admin.mailing import USERS_CACHE
     USERS_CACHE["users"] = []
     USERS_CACHE["timestamp"] = 0.0
 
@@ -121,7 +121,7 @@ async def test_toggle_list_user():
     callback.message = MagicMock()
     callback.message.edit_text = AsyncMock()
     
-    from routers.admin.mailing import USERS_CACHE
+    from presentation.telegram.admin.mailing import USERS_CACHE
     USERS_CACHE["users"] = []
     USERS_CACHE["timestamp"] = 0.0
 

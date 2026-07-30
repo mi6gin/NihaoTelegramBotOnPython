@@ -1,24 +1,9 @@
-import asyncio
 import pytest
 import pytest_asyncio
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
 from database.engine import Base
 from database.models.user import User
 from database.models.ticket import Ticket
-
-
-@pytest.fixture(scope="session")
-def event_loop():
-    """
-    Создает глобальный event loop для асинхронных тестов.
-    """
-    try:
-        loop = asyncio.get_running_loop()
-    except RuntimeError:
-        loop = asyncio.new_event_loop()
-    yield loop
-    loop.close()
-
 
 @pytest_asyncio.fixture(scope="function")
 async def db_session():

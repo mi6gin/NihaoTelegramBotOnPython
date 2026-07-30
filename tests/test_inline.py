@@ -1,9 +1,9 @@
 import pytest
-from unittest.mock import AsyncMock, MagicMock
+from unittest.mock import AsyncMock, MagicMock, patch
 from aiogram.types import InlineQuery
 from database.repository.favorite_repo import FavoriteTikTokRepository
 from database.models.favorite_tiktok import FavoriteTikTok
-from commands.inline_mode import inline_favorites_query
+from presentation.telegram.user.inline_mode import inline_favorites_query
 from sqlalchemy.ext.asyncio import AsyncSession
 
 
@@ -46,7 +46,15 @@ async def test_inline_favorites_query_with_items(db_session: AsyncSession):
     i18n = MagicMock()
     i18n.get = MagicMock(side_effect=lambda key, **kwargs: f"text_{key}")
 
-    await inline_favorites_query(inline_query, db_session, i18n)
+    with patch(
+        "presentation.telegram.user.inline_mode.TikTokParser.fetch_tikwm_info",
+        new_callable=AsyncMock,
+        return_value={
+            "play_url": "https://example.com/video.mp4",
+            "cover": "https://example.com/cover.jpg",
+        },
+    ):
+        await inline_favorites_query(inline_query, db_session, i18n)
 
     inline_query.answer.assert_called_once()
     results = inline_query.answer.call_args[0][0]
@@ -84,4 +92,3 @@ async def test_inline_favorites_query_cached_video(db_session: AsyncSession):
     assert len(results) == 1
     assert isinstance(results[0], InlineQueryResultCachedVideo)
     assert results[0].video_file_id == "BAACAgIAAxkBAAITestFileId123"
-

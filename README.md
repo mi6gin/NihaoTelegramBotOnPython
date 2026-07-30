@@ -46,6 +46,10 @@
 NihaoTelegramBotOnPython/
 │
 ├── bot.py                      # Точка входа: инициализация Bot, Dispatcher, middlewares и роутеров.
+├── application/                # Сборка приложения, команды Telegram и управление жизненным циклом.
+├── domain/                     # Бизнес-правила и модели без зависимостей от фреймворков.
+├── infrastructure/             # Адаптеры внешних сервисов (TikTok, HTTP, yt-dlp).
+├── presentation/telegram/      # Все пользовательские, административные и служебные Telegram-роуты.
 ├── .env.example                # Пример файла переменных окружения.
 ├── requirements.txt            # Зависимости Python.
 ├── alembic.ini                 # Конфигурация миграций Alembic.
@@ -53,7 +57,6 @@ NihaoTelegramBotOnPython/
 ├── docker-compose.yml          # Скрипт запуска в Docker Compose.
 │
 ├── alembic/                    # Миграции структуры базы данных.
-├── commands/                   # 👈 Все пользовательские команды (/start, /dedinside, /Mtiktok, /Ptiktok, profile, support).
 ├── config/                     # Настройки проекта (Pydantic Settings).
 ├── data/                       # Хранилище базы данных SQLite (nihao_chan.db).
 ├── database/                   # Модели SQLAlchemy (users, tickets, bot_texts) и репозитории (CRUD).
@@ -61,10 +64,12 @@ NihaoTelegramBotOnPython/
 ├── keyboards/                  # Глобальные инлайн-клавиатуры (меню, профиль, админка, отмена).
 ├── locales/                    # Файлы переводов Fluent (.ftl) для ru и en.
 ├── middlewares/                # Прослойки (БД, баны, i18n, антифлуд, логирование).
-├── routers/                    # Админ-панель и служебные роутеры (admin, errors).
 ├── utils/                      # Логирование, TikTokParser, DynamicTextManager и валидаторы.
 └── tests/                      # Набор автоматических тестов (pytest).
 ```
+
+Подробные границы слоёв и правила зависимостей описаны в
+[`ARCHITECTURE.md`](ARCHITECTURE.md).
 
 ---
 
@@ -119,4 +124,3 @@ pytest
 
 ## 📜 Лицензия
 Проект распространяется под лицензией MIT.
-
